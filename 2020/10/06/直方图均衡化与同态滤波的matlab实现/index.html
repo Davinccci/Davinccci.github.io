@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"davinccci.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="&amp;#x56FE;&amp;#x50CF;&amp;#x5904;&amp;#x7406;&amp;#x7B2C;&amp;#x4E8C;&amp;#x6B21;&amp;#x4F5C;&amp;#x4E1A;&amp;#x7406;&amp;#x8BBA;&amp;#x4F5C;&amp;#x4E1A;   &amp;#x7F16;&amp;#x7A0B;&amp;#x4F5C;&amp;#x4E1A;&amp;#x2013;&amp;#x76F4;&amp;#x65B9;&amp;#x56FE;&amp;#x5747;&amp;#x8861;&amp;#x5316;&amp;#x4E">
+<meta property="og:type" content="article">
+<meta property="og:title" content="直方图均衡化与同态滤波的matlab实现">
+<meta property="og:url" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="&amp;#x56FE;&amp;#x50CF;&amp;#x5904;&amp;#x7406;&amp;#x7B2C;&amp;#x4E8C;&amp;#x6B21;&amp;#x4F5C;&amp;#x4E1A;&amp;#x7406;&amp;#x8BBA;&amp;#x4F5C;&amp;#x4E1A;   &amp;#x7F16;&amp;#x7A0B;&amp;#x4F5C;&amp;#x4E1A;&amp;#x2013;&amp;#x76F4;&amp;#x65B9;&amp;#x56FE;&amp;#x5747;&amp;#x8861;&amp;#x5316;&amp;#x4E">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A%E9%A2%98%E7%9B%AE.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A1.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A2.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E4%BD%8E%E7%85%A7%E5%BA%A6%E5%9B%BE%E5%83%8F.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%85%AC%E5%BC%8F.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/&#x540C;&#x6001;&#x6EE4;&#x6CE2;1.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x6B65;&#x9AA4;.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/1.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/2.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/3.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%94%B5%E5%AD%90%E7%AD%BE%E5%90%8D.png">
+<meta property="article:published_time" content="2020-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-10-06T14:09:26.274Z">
+<meta property="article:author" content="Davinccci">
+<meta property="article:tag" content="matlab">
+<meta property="article:tag" content="图像处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A%E9%A2%98%E7%9B%AE.PNG">
+
+<link rel="canonical" href="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>直方图均衡化与同态滤波的matlab实现 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://davinccci.github.io/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/luffy.jpg">
+      <meta itemprop="name" content="Davinccci">
+      <meta itemprop="description" content="人生碌碌，竞短论长，却不道得失有数，荣枯难量。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          直方图均衡化与同态滤波的matlab实现
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-06 00:00:00 / 修改时间：22:09:26" itemprop="dateCreated datePublished" datetime="2020-10-06T00:00:00+08:00">2020-10-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/matlab/" itemprop="url" rel="index"><span itemprop="name">matlab</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="&#x56FE;&#x50CF;&#x5904;&#x7406;&#x7B2C;&#x4E8C;&#x6B21;&#x4F5C;&#x4E1A;"><a href="#&#x56FE;&#x50CF;&#x5904;&#x7406;&#x7B2C;&#x4E8C;&#x6B21;&#x4F5C;&#x4E1A;" class="headerlink" title="&#x56FE;&#x50CF;&#x5904;&#x7406;&#x7B2C;&#x4E8C;&#x6B21;&#x4F5C;&#x4E1A;"></a>&#x56FE;&#x50CF;&#x5904;&#x7406;&#x7B2C;&#x4E8C;&#x6B21;&#x4F5C;&#x4E1A;</h1><h3 id="&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;"><a href="#&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;" class="headerlink" title="&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;"></a>&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;</h3><p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A%E9%A2%98%E7%9B%AE.PNG" alt="&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;&#x9898;&#x76EE;"></p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A1.png" alt="&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;1"></p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%90%86%E8%AE%BA%E4%BD%9C%E4%B8%9A2.png" alt="&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;2"></p>
+<h3 id="&#x7F16;&#x7A0B;&#x4F5C;&#x4E1A;&#x2013;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E0E;&#x6548;&#x679C;&#x6BD4;&#x8F83;"><a href="#&#x7F16;&#x7A0B;&#x4F5C;&#x4E1A;&#x2013;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E0E;&#x6548;&#x679C;&#x6BD4;&#x8F83;" class="headerlink" title="&#x7F16;&#x7A0B;&#x4F5C;&#x4E1A;&#x2013;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E0E;&#x6548;&#x679C;&#x6BD4;&#x8F83;"></a>&#x7F16;&#x7A0B;&#x4F5C;&#x4E1A;&#x2013;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E0E;&#x6548;&#x679C;&#x6BD4;&#x8F83;</h3><h4 id="&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"><a href="#&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;" class="headerlink" title="&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"></a>&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;</h4><ol>
+<li><p>&#x4E86;&#x89E3;&#x56FE;&#x50CF;&#x589E;&#x5F3A;&#x7684;&#x610F;&#x4E49;&#x548C;&#x624B;&#x6BB5;</p>
+</li>
+<li><p>&#x638C;&#x63E1;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x7684;&#x539F;&#x7406;</p>
+</li>
+<li><p>&#x901A;&#x8FC7;Matlab&#x7F16;&#x7A0B;&#x5B9E;&#x73B0;&#x5BF9;&#x7ED9;&#x5B9A;&#x56FE;&#x50CF;&#x7684;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#xFF0C;&#x5E76;&#x6BD4;&#x8F83;&#x4E8C;&#x8005;&#x7684;&#x6548;&#x679C;</p>
+</li>
+</ol>
+<h4 id="&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"><a href="#&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;" class="headerlink" title="&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"></a>&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;</h4><ol>
+<li><p>&#x8BA1;&#x7B97;&#x673A;</p>
+</li>
+<li><p>Matlab&#x7A0B;&#x5E8F;</p>
+</li>
+<li><p>&#x539F;&#x4F4E;&#x7167;&#x5EA6;&#x56FE;&#x50CF;</p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E4%BD%8E%E7%85%A7%E5%BA%A6%E5%9B%BE%E5%83%8F.jpg" alt="&#x4F4E;&#x7167;&#x5EA6;&#x56FE;&#x50CF;"></p>
+</li>
+</ol>
+<h4 id="&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"><a href="#&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;" class="headerlink" title="&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"></a>&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;</h4><h5 id="1-&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;"><a href="#1-&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;" class="headerlink" title="1.&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;"></a>1.&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;</h5><p>&#x200B;        &#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x662F;&#x901A;&#x8FC7;&#x5BF9;&#x539F;&#x56FE;&#x50CF;&#x8FDB;&#x884C;&#x67D0;&#x79CD;&#x53D8;&#x6362;&#xFF0C;&#x4F7F;&#x6E90;&#x56FE;&#x50CF;&#x7684;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&#x4FEE;&#x6B63;&#x4E3A;<strong>&#x5747;&#x5300;&#x5206;&#x5E03;</strong>&#x7684;&#x76F4;&#x65B9;&#x56FE;&#x7684;&#x4E00;&#x79CD;&#x65B9;&#x6CD5;&#x3002;&#x57FA;&#x672C;&#x601D;&#x60F3;&#x4F7F;&#x5BF9;&#x5728;&#x56FE;&#x50CF;&#x4E2D;&#x50CF;&#x7D20;&#x4E2A;&#x6570;&#x591A;&#x7684;&#x7070;&#x5EA6;&#x7EA7;&#x8FDB;&#x884C;&#x5360;&#x5C55;&#x5BBD;&#xFF0C;&#x800C;&#x5BF9;&#x50CF;&#x7D20;&#x4E2A;&#x6570;&#x5C11;&#x7684;&#x7070;&#x5EA6;&#x7EA7;&#x8FDB;&#x884C;&#x7F29;&#x51CF;&#xFF0C;&#x4ECE;&#x800C;&#x8FBE;&#x5230;&#x6E05;&#x6670;&#x56FE;&#x50CF;&#x7684;&#x76EE;&#x7684;&#x3002;</p>
+<p>&#x200B;        &#x5747;&#x8861;&#x5316;&#x65B9;&#x6CD5;&#xFF1A;&#x6784;&#x9020;&#x4E00;&#x4E2A;&#x4ECE;&#x539F;&#x7070;&#x5EA6;&#x56FE;&#x5230;&#x76EE;&#x6807;&#x7070;&#x5EA6;&#x56FE;&#x7684;&#x50CF;&#x7D20;&#x503C;&#x7684;&#x6620;&#x5C04;&#xFF0C;&#x79BB;&#x6563;&#x60C5;&#x51B5;&#x4E0B;&#x7684;&#x516C;&#x5F0F;&#x5982;&#x56FE;&#xFF1A;</p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%85%AC%E5%BC%8F.PNG" alt="&#x76F4;&#x65B9;&#x56FE;&#x516C;&#x5F0F;"></p>
+<p>&#x200B;        &#x901A;&#x8FC7;&#x8FD9;&#x4E00;&#x6620;&#x5C04;&#x540E;&#xFF0C;&#x5373;&#x53EF;&#x5F97;&#x5230;&#x5747;&#x8861;&#x5316;&#x7684;&#x76F4;&#x65B9;&#x56FE;&#x3002;</p>
+<blockquote>
+<p>&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x7684;&#x5B9E;&#x8D28;&#xFF1A;<strong>&#x51CF;&#x5C11;&#x56FE;&#x50CF;&#x7684;&#x7070;&#x5EA6;&#x7EA7;&#x4EE5;&#x6362;&#x53D6;&#x5BF9;&#x6BD4;&#x5EA6;&#x7684;&#x52A0;&#x5927;</strong></p>
+</blockquote>
+<h5 id="2-&#x540C;&#x6001;&#x6EE4;&#x6CE2;"><a href="#2-&#x540C;&#x6001;&#x6EE4;&#x6CE2;" class="headerlink" title="2.&#x540C;&#x6001;&#x6EE4;&#x6CE2;"></a>2.&#x540C;&#x6001;&#x6EE4;&#x6CE2;</h5><p>&#x200B;        &#x4EBA;&#x4E4B;&#x6240;&#x4EE5;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x67D0;&#x4E2A;&#x666F;&#x7269;&#xFF0C;&#x662F;&#x56E0;&#x4E3A;&#x6709;&#x5149;&#x8F90;&#x5C04;&#x80FD;&#x7167;&#x5728;&#x8BE5;&#x666F;&#x7269;&#x4E0A;&#xFF0C;&#x7ECF;&#x8FC7;&#x666F;&#x7269;&#x7684;&#x53CD;&#x5C04;&#x6216;&#x900F;&#x5C04;&#x4F5C;&#x7528;&#x4E4B;&#x540E;&#xFF0C;&#x5728;&#x4EBA;&#x7684;&#x89C6;&#x7F51;&#x819C;&#x4E0A;&#x4EA7;&#x751F;&#x611F;&#x77E5;&#x4FE1;&#x53F7;&#xFF0C;&#x8BE5;&#x611F;&#x77E5;&#x4FE1;&#x53F7;&#x4F20;&#x9001;&#x5230;&#x5927;&#x8111;&#x540E;&#x5F62;&#x6210;&#x5BF9;&#x666F;&#x7269;&#x7684;&#x7406;&#x89E3;&#x3002;&#x6309;&#x7167;&#x5149;&#x56FE;&#x50CF;&#x7684;&#x6210;&#x50CF;&#x539F;&#x7406;&#xFF0C;&#x53EF;&#x4EE5;&#x5BF9;&#x4E00;&#x5E45;&#x56FE;&#x50CF;&#x8FDB;&#x884C;&#x5982;&#x4E0B;&#x7684;&#x7B80;&#x5355;&#x5EFA;&#x6A21;&#xFF1A;</p>
+<img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/&#x540C;&#x6001;&#x6EE4;&#x6CE2;1.png" alt="&#x540C;&#x6001;&#x6EE4;&#x6CE2;1" style="zoom:50%;">
+
+<p>&#x200B;        &#x5373;&#x628A;&#x56FE;&#x50CF;&#x4EAE;&#x5EA6;&#x1D487;(&#x1D499;,&#x1D49A;)&#x770B;&#x6210;&#x662F;&#x7531;&#x5165;&#x5C04;&#x5206;&#x91CF;&#xFF08;&#x5165;&#x5C04;&#x5230;&#x666F;&#x7269;&#x4E0A;&#x7684;&#x5149;&#x5F3A;&#x5EA6;&#xFF09;&#x1D48A;(&#x1D499;,&#x1D49A;)&#x548C;&#x53CD;&#x5C04;&#x5206;&#x91CF;&#xFF08;&#x666F;&#x7269;&#x53CD;&#x5C04;&#x7684;&#x5149;&#x5F3A;&#x5EA6;&#xFF09;&#x1D493;(&#x1D499;,&#x1D49A;)&#x7EC4;&#x6210;&#x3002;</p>
+<p>&#x200B;        &#x800C;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x662F;&#x4E00;&#x79CD;&#x5728;&#x9891;&#x57DF;&#x4E2D;&#x540C;&#x65F6;&#x8FDB;&#x884C;&#x56FE;&#x50CF;&#x5BF9;&#x6BD4;&#x5EA6;&#x589E;&#x5F3A;&#x548C;&#x538B;&#x7F29;&#x56FE;&#x50CF;&#x4EAE;&#x5EA6;&#x8303;&#x56F4;&#x7684;&#x6EE4;&#x6CE2;&#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x57FA;&#x672C;&#x601D;&#x60F3;&#x662F;&#x51CF;&#x5C11;&#x5165;&#x5C04;&#x5206;&#x91CF;&#x1D48A;(&#x1D499;,&#x1D49A;)&#xFF0C;&#x5E76;&#x540C;&#x65F6;&#x589E;&#x52A0;&#x53CD;&#x5C04;&#x5206;&#x91CF;&#x1D493;(&#x1D499;,&#x1D49A;)&#x6765;&#x6539;&#x5584;&#x56FE;&#x50CF;&#x1D487;(&#x1D499;,&#x1D49A;)&#x7684;&#x663E;&#x793A;&#x6548;&#x679C;&#xFF1B;&#x5176;&#x4E2D;&#xFF0C;&#x1D48A;(&#x1D499;,&#x1D49A;)&#x5728;&#x7A7A;&#x95F4;&#x4E0A;&#x53D8;&#x5316;&#x7F13;&#x6162;&#xFF0C;&#x5176;&#x9891;&#x8C31;&#x96C6;&#x4E2D;&#x5728;&#x4F4E;&#x9891;&#x6BB5;&#xFF0C;&#x1D493;(&#x1D499;,&#x1D49A;)&#x53CD;&#x6620;&#x56FE;&#x50CF;&#x7684;&#x7EC6;&#x8282;&#x548C;&#x8FB9;&#x7F18;&#xFF0C;&#x5176;&#x9891;&#x8C31;&#x96C6;&#x4E2D;&#x5728;&#x9AD8;&#x9891;&#x6BB5;&#x3002;&#x4E3A;&#x6B64;&#xFF0C;&#x5373;&#x53EF;&#x5BF9;&#x56FE;&#x50CF;&#x7684;&#x5085;&#x91CC;&#x53F6;&#x9891;&#x8C31;&#x8FDB;&#x884C;&#x9891;&#x57DF;&#x9AD8;&#x901A;&#x6EE4;&#x6CE2;&#xFF0C;&#x53CA;&#x51CF;&#x5C0F;&#x4F4E;&#x9891;&#x6210;&#x5206;&#xFF0C;&#x589E;&#x5927;&#x9AD8;&#x9891;&#x6210;&#x5206;&#x3002;</p>
+<p>&#x200B;        &#x5728;&#x6B64;&#x5229;&#x7528;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;&#x7684;&#x7EBF;&#x6027;&#x6027;&#xFF0C;&#x53EF;&#x4EE5;&#x5BF9;&#x539F;&#x6210;&#x50CF;&#x6A21;&#x578B;&#x4E24;&#x8FB9;&#x53D6;&#x5BF9;&#x6570;&#xFF0C;&#x5C06;&#x4E58;&#x6CD5;&#x5316;&#x4E3A;&#x52A0;&#x6CD5;&#xFF0C;&#x5373;&#x53EF;&#x5206;&#x522B;&#x5BF9;&#x5165;&#x5C04;&#x91CF;&#x548C;&#x53CD;&#x5C04;&#x91CF;&#x8FDB;&#x884C;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;&#x548C;&#x9891;&#x57DF;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#xFF0C;&#x6EE4;&#x6CE2;&#x540E;&#x518D;&#x53CD;&#x53D8;&#x6362;&#x56DE;&#x5230;&#x7A7A;&#x57DF;&#x53D6;&#x6307;&#x6570;&#x5373;&#x53EF;&#x3002;</p>
+<img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x6B65;&#x9AA4;.PNG" alt="&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x6B65;&#x9AA4;" style="zoom: 50%;">
+
+<p>&#x200B;        &#x5728;&#x672C;&#x4F8B;&#x4E2D;&#xFF0C;&#x6EE4;&#x6CE2;&#x5668;H&#xFF08;u&#xFF0C;v&#xFF09;&#x91C7;&#x7528;&#x9AD8;&#x65AF;&#x9AD8;&#x901A;&#x6EE4;&#x6CE2;&#x5668;&#x3002;</p>
+<h4 id="&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"><a href="#&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;" class="headerlink" title="&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"></a>&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;</h4><p>Matlab&#x6E90;&#x4EE3;&#x7801;&#xFF1A;</p>
+<p>&#x4E3B;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">img = imread(<span class="string">&apos;&#x4F4E;&#x7167;&#x5EA6;&#x56FE;&#x50CF;.jpg&apos;</span>);</span><br><span class="line">gray = img2gray(img);<span class="comment">%&#x8C03;&#x7528;img2gray&#x51FD;&#x6570;&#x5C06;&#x5F69;&#x8272;&#x56FE;&#x8F6C;&#x4E3A;&#x7070;&#x5EA6;&#x56FE;&#xFF1B;</span></span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>);imshow(gray);title(<span class="string">&apos;&#x7070;&#x5EA6;&#x56FE;&apos;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>);imhist(gray);title(<span class="string">&apos;&#x7CFB;&#x7EDF;&#x51FD;&#x6570;&#x5B9E;&#x73B0;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&apos;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">3</span>);my_imhist(gray);title(<span class="string">&apos;&#x81EA;&#x5DF1;&#x5B9E;&#x73B0;&#x8BA1;&#x7B97;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&apos;</span>);</span><br><span class="line">F = KS_FLY(gray);<span class="comment">%&#x6C42;&#x89E3;&#x5085;&#x91CC;&#x53F6;&#x9891;&#x8C31;&#x77E9;&#x9635;</span></span><br><span class="line">Fabs = <span class="built_in">log</span>(<span class="built_in">abs</span>(F)+<span class="number">1</span>);<span class="comment">%&#x53D6;&#x6A21;&#x7F29;&#x653E;&#x65B9;&#x4FBF;&#x663E;&#x793A;</span></span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">4</span>);imshow(Fabs,[]);title(<span class="string">&apos;&#x79BB;&#x6563;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;&#x9891;&#x8C31;&#x56FE;&apos;</span>);</span><br><span class="line"><span class="built_in">figure</span>;</span><br><span class="line">[GP4,gray2] = jhh(gray); <span class="comment">%&#x81EA;&#x5DF1;&#x5B9E;&#x73B0;&#x7684;&#x5747;&#x8861;&#x5316;&#x51FD;&#x6570;</span></span><br><span class="line"><span class="built_in">figure</span>;</span><br><span class="line">ttlb(gray);  <span class="comment">%&#x81EA;&#x5DF1;&#x5B9E;&#x73B0;&#x7684;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x51FD;&#x6570;</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x8F6C;&#x7070;&#x5EA6;&#x56FE;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>   <span class="title">gray</span> = <span class="title">img2gray</span><span class="params">(img)</span></span></span><br><span class="line">[rows,cols,colors] = <span class="built_in">size</span>(img);<span class="comment">%&#x53D6;&#x5F69;&#x8272;&#x56FE;&#x77E9;&#x9635;&#x7684;&#x53C2;&#x6570;</span></span><br><span class="line">gray = <span class="built_in">zeros</span>(rows,colors);<span class="comment">%&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x5168;&#x96F6;&#x7A7A;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:rows </span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">j</span> = <span class="number">1</span>:cols</span><br><span class="line">        sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> k = <span class="number">1</span>:colors</span><br><span class="line">                <span class="keyword">switch</span> k</span><br><span class="line">                    <span class="keyword">case</span>{<span class="number">1</span>}</span><br><span class="line">                            m = <span class="number">0.299</span>;</span><br><span class="line">                    <span class="keyword">case</span>{<span class="number">2</span>}</span><br><span class="line">                            m = <span class="number">0.587</span>;</span><br><span class="line">                    <span class="keyword">case</span>{<span class="number">3</span>}</span><br><span class="line">                            m = <span class="number">0.114</span>;</span><br><span class="line">                <span class="keyword">end</span></span><br><span class="line">                sum = sum + img(<span class="built_in">i</span> , <span class="built_in">j</span> , k)*m;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        gray(<span class="built_in">i</span> , <span class="built_in">j</span>) = sum;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">gray = uint8(gray);<span class="comment">%&#x5C06;&#x521B;&#x5EFA;&#x7684;&#x5168;&#x96F6;&#x77E9;&#x9635;&#x8F6C;&#x5316;&#x4E3A;uint8&#x683C;&#x5F0F;&#xFF0C;&#x56E0;&#x4E3A;&#x7528;&#x4E0A;&#x9762;&#x7684;&#x8BED;&#x53E5;&#x521B;&#x5EFA;&#x4E4B;&#x540E;&#x56FE;&#x50CF;&#x662F;double&#x578B;&#x7684;</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x5FEB;&#x901F;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">%&#x5FEB;&#x901F;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;&#x5B9E;&#x73B0;&#x7B97;&#x6CD5;</span></span><br><span class="line"><span class="comment">%gray&#x4E3A;&#x7070;&#x5EA6;&#x56FE;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="comment">%&#x65F6;&#x95F4;&#x590D;&#x6742;&#x5EA6;&#x4E3A;&#xFF08;N*logN&#xFF09;</span></span><br><span class="line"><span class="function"><span class="keyword">function</span>  <span class="title">F</span> = <span class="title">KS_FLY</span><span class="params">(gray)</span></span></span><br><span class="line">gray = double(gray);</span><br><span class="line">[M,N] = <span class="built_in">size</span>(gray);<span class="comment">%&#x5F97;&#x5230;&#x884C;&#x5217;&#x6570;</span></span><br><span class="line">M2 = <span class="number">2</span> ^<span class="built_in">nextpow2</span>(M) ; <span class="comment">%&#x6C42;&#x89E3;&#x6700;&#x9760;&#x8FD1;M&#x7684;2&#x7684;&#x6574;&#x6B21;&#x5E42;&#x7684;&#x6570;&#x5B57;</span></span><br><span class="line">N2 = <span class="number">2</span> ^ <span class="built_in">nextpow2</span>(N) ;</span><br><span class="line">F = <span class="built_in">zeros</span>(M2,N2);<span class="comment">%&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x6269;&#x5145;&#x540E;&#x7684;&#x5168;&#x96F6;&#x77E9;&#x9635;,&#x5B58;&#x653E;&#x7ED3;&#x679C;</span></span><br><span class="line">gray2 = <span class="built_in">zeros</span>(M2,N2);</span><br><span class="line"></span><br><span class="line"><span class="comment">%&#x6269;&#x5C55;&#x539F;gray&#x77E9;&#x9635;&#xFF0C;&#x4F7F;&#x5176;&#x884C;&#x5217;&#x53D8;&#x4E3A;2&#x7684;N&#x6B21;&#x5E42;&#xFF0C;&#x4FBF;&#x4E8E;&#x8FDB;&#x884C;&#x540E;&#x7EED;&#x7684;&#x5FEB;&#x901F;&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;</span></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span>=<span class="number">1</span>:M</span><br><span class="line">    gray2(<span class="built_in">i</span>,:) = [gray(<span class="built_in">i</span>,:),<span class="built_in">zeros</span>(<span class="number">1</span>,N2 - N)];</span><br><span class="line"><span class="keyword">end</span> </span><br><span class="line"><span class="keyword">for</span> y = <span class="number">1</span>:M2</span><br><span class="line">    Fx(y,:) = KS_1D(gray2(y,:));</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">for</span> x = <span class="number">1</span>:N2</span><br><span class="line">   F(:,x) = KS_1D(Fx(:,x).&apos;).&apos;;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">%&#x5FEB;&#x901F;&#x5085;&#x91CC;&#x53F6;1-D&#x53D8;&#x6362;</span></span><br><span class="line"><span class="comment">%gray2&#xFF1A;&#x6269;&#x5145;&#x540E;&#x7684;&#x5E42;&#x6B21;&#x77E9;&#x9635;(&#x4E00;&#x7EF4;)</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">F</span> = <span class="title">KS_1D</span><span class="params">(gray_1D)</span></span></span><br><span class="line">N = <span class="built_in">size</span>(gray_1D,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">if</span> N == <span class="number">1</span></span><br><span class="line">    F = gray_1D; </span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    M = N/<span class="number">2</span>;</span><br><span class="line">    gray_even =  gray_1D(<span class="number">1</span>:<span class="number">2</span>:<span class="keyword">end</span>);</span><br><span class="line">    F_even = KS_1D(gray_even);</span><br><span class="line">    gray_odd =  gray_1D(<span class="number">2</span>:<span class="number">2</span>:<span class="keyword">end</span>);</span><br><span class="line">    F_odd = KS_1D(gray_odd);</span><br><span class="line">    <span class="keyword">for</span> k = <span class="number">0</span>:M<span class="number">-1</span></span><br><span class="line">        F(k+<span class="number">1</span>) = (F_even(k+<span class="number">1</span>)+F_odd(k+<span class="number">1</span>)*<span class="built_in">exp</span>(<span class="number">-1</span><span class="built_in">i</span>*<span class="number">2</span>*<span class="built_in">pi</span>*k/N));</span><br><span class="line">        F(k+<span class="number">1</span>+M) = (F_even(k+<span class="number">1</span>)-F_odd(k+<span class="number">1</span>)*<span class="built_in">exp</span>(<span class="number">-1</span><span class="built_in">i</span>*<span class="number">2</span>*<span class="built_in">pi</span>*k/N));</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x6C42;&#x76F4;&#x65B9;&#x56FE;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GP</span> = <span class="title">my_imhist</span><span class="params">(gray)</span></span></span><br><span class="line"><span class="comment">%&#x81EA;&#x5DF1;&#x5B9E;&#x73B0;&#x8BA1;&#x7B97;&#x7070;&#x5EA6;&#x56FE;&#x7684;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;</span></span><br><span class="line"><span class="comment">%gray&#x4E3A;&#x8F93;&#x5165;&#x7070;&#x5EA6;&#x56FE;&#xFF0C;GP&#x4E3A;&#x7070;&#x5EA6;&#x7EA7;&#x77E9;&#x9635;&#xFF08;1*256&#xFF09;</span></span><br><span class="line">[m,n] = <span class="built_in">size</span>(gray); <span class="comment">%&#x8BB0;&#x5F55;&#x56FE;&#x50CF;&#x5C3A;&#x5BF8;</span></span><br><span class="line">GP = <span class="built_in">zeros</span>(<span class="number">1</span>,<span class="number">256</span>);<span class="comment">%&#x5EFA;&#x7ACB;&#x4E00;&#x4E2A;&#x7A7A;&#x6570;&#x7EC4;</span></span><br><span class="line"><span class="keyword">for</span> k = <span class="number">0</span>:<span class="number">255</span></span><br><span class="line">    GP(k+<span class="number">1</span>) = <span class="built_in">length</span>(<span class="built_in">find</span>(gray == k))/(m*n);<span class="comment">%&#x8BA1;&#x7B97;&#x6BCF;&#x4E00;&#x7EA7;&#x7070;&#x5EA6;&#x51FA;&#x73B0;&#x7684;&#x6982;&#x7387;</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">bar(<span class="number">0</span>:<span class="number">255</span>,GP);xlabel(<span class="string">&apos;&#x7070;&#x5EA6;&#x503C;&apos;</span>);ylabel(<span class="string">&apos;&#x51FA;&#x73B0;&#x6982;&#x7387;&apos;</span>);</span><br><span class="line">xlim([<span class="number">0</span> <span class="number">255</span>]);<span class="comment">%&#x89C4;&#x5B9A;&#x56FE;&#x50CF;&#x663E;&#x793A;&#x8303;&#x56F4;</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x5747;&#x8861;&#x5316;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="params">[GP4 gray2]</span> = <span class="title">jhh</span><span class="params">(gray)</span></span></span><br><span class="line"><span class="comment">%&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;</span></span><br><span class="line"><span class="comment">%gray&#x4E3A;&#x8F93;&#x5165;&#x56FE;&#x50CF;&#x7070;&#x5EA6;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="comment">%gray2&#x4E3A;&#x5747;&#x8861;&#x5316;&#x7684;&#x56FE;&#x50CF;&#x7684;&#x7070;&#x5EA6;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="comment">%GP2&#x4E3A;&#x7D2F;&#x8BA1;&#x6982;&#x7387;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="comment">%GP3&#x4E3A;&#x6BCF;&#x4E2A;&#x7070;&#x5EA6;&#x7EA7;&#x6620;&#x5C04;&#x540E;&#x5BF9;&#x5E94;&#x7684;&#x7070;&#x5EA6;&#x7EA7;&#x5F62;&#x6210;&#x7684;&#x77E9;&#x9635;</span></span><br><span class="line"><span class="comment">%GP4&#x4E3A;&#x5747;&#x8861;&#x5316;&#x540E;&#x7684;&#x7070;&#x5EA6;&#x7EA7;&#x6982;&#x7387;&#x77E9;&#x9635;&#xFF08;1*256&#xFF09;</span></span><br><span class="line">GP = my_imhist(gray);</span><br><span class="line">GP2 = <span class="built_in">zeros</span>(<span class="number">1</span>,<span class="number">256</span>);</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:<span class="number">256</span></span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">j</span> = <span class="number">1</span>:<span class="built_in">i</span></span><br><span class="line">        GP2(<span class="built_in">i</span>) = GP(<span class="built_in">j</span>)+GP2(<span class="built_in">i</span>);</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span>          <span class="comment">%&#x8BA1;&#x7B97;&#x7D2F;&#x8BA1;&#x6982;&#x7387;</span></span><br><span class="line">GP3 = <span class="built_in">round</span>((GP2*<span class="number">256</span>)+<span class="number">0.5</span>);<span class="comment">%&#x56DB;&#x820D;&#x4E94;&#x5165;&#x5230;&#x6700;&#x63A5;&#x8FD1;&#x7684;&#x7070;&#x5EA6;&#x7EA7;</span></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:<span class="number">256</span></span><br><span class="line">    GP4(<span class="built_in">i</span>) = sum(GP(<span class="built_in">find</span>(GP3==(<span class="built_in">i</span><span class="number">-1</span>))));<span class="comment">%&#x8BA1;&#x7B97;&#x6620;&#x5C04;&#x540E;&#x5404;&#x7070;&#x5EA6;&#x7EA7;&#x51FA;&#x73B0;&#x7684;&#x6982;&#x7387;</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">gray2 = gray;</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">0</span>:<span class="number">255</span></span><br><span class="line">    gray2(<span class="built_in">find</span>(gray == <span class="built_in">i</span>)) = GP3(<span class="built_in">i</span>+<span class="number">1</span>);</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>);imshow(gray);title(<span class="string">&apos;&#x539F;&#x56FE;&apos;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>);imshow(gray2);title(<span class="string">&apos;&#x5747;&#x8861;&#x5316;&#x540E;&#x56FE;&#x50CF;&apos;</span>);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">3</span>);bar(<span class="number">0</span>:<span class="number">255</span>,GP);xlabel(<span class="string">&apos;&#x7070;&#x5EA6;&#x503C;&apos;</span>);ylabel(<span class="string">&apos;&#x51FA;&#x73B0;&#x6982;&#x7387;&apos;</span>);</span><br><span class="line">title(<span class="string">&quot;&#x539F;&#x56FE;&#x7684;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&quot;</span>);xlim([<span class="number">0</span> <span class="number">255</span>]);<span class="comment">%&#x89C4;&#x5B9A;&#x56FE;&#x50CF;&#x663E;&#x793A;&#x8303;&#x56F4;</span></span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">2</span>,<span class="number">4</span>);bar(<span class="number">0</span>:<span class="number">255</span>,GP4);xlabel(<span class="string">&apos;&#x7070;&#x5EA6;&#x503C;&apos;</span>);ylabel(<span class="string">&apos;&#x51FA;&#x73B0;&#x6982;&#x7387;&apos;</span>);</span><br><span class="line">title(<span class="string">&quot;&#x5747;&#x8861;&#x5316;&#x540E;&#x7684;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&quot;</span>);xlim([<span class="number">0</span> <span class="number">255</span>]);<span class="comment">%&#x89C4;&#x5B9A;&#x56FE;&#x50CF;&#x663E;&#x793A;&#x8303;&#x56F4;</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x51FD;&#x6570;&#xFF1A;</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">![<span class="number">1</span>](<span class="number">1.</span>jpg)<span class="function"><span class="keyword">function</span>  <span class="title">gray3</span> = <span class="title">ttlb</span><span class="params">(gray)</span></span></span><br><span class="line">gray  = double(gray);</span><br><span class="line">[M,N] = <span class="built_in">size</span>(gray);</span><br><span class="line">P = <span class="number">2</span>*M;Q = <span class="number">2</span>*N;</span><br><span class="line">I= <span class="built_in">zeros</span>(P,Q);</span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span> = <span class="number">1</span>:M</span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">j</span> =<span class="number">1</span>:N</span><br><span class="line">        I(<span class="built_in">i</span>,<span class="built_in">j</span>) = gray(<span class="built_in">i</span>,<span class="built_in">j</span>);  <span class="comment">%&#x5BF9;&#x56FE;&#x50CF;&#x8FDB;&#x884C;&#x586B;&#x5145;</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">gray_log = <span class="built_in">log</span>(I+<span class="number">1</span>);<span class="comment">%&#x52A0;&#x4E00;&#x662F;&#x907F;&#x514D;&#x51FA;&#x73B0;&#x96F6;&#x50CF;&#x7D20;&#x70B9;</span></span><br><span class="line">F = fft2(gray_log);<span class="comment">%&#x5085;&#x91CC;&#x53F6;&#x53D8;&#x6362;</span></span><br><span class="line">n1=<span class="built_in">floor</span>(P/<span class="number">2</span>);</span><br><span class="line">n2=<span class="built_in">floor</span>(Q/<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">rL = <span class="number">0.15</span>;</span><br><span class="line">rH = <span class="number">1.8</span>;</span><br><span class="line">c = <span class="number">0.1</span>;</span><br><span class="line">d0 = <span class="number">900</span>;</span><br><span class="line"><span class="comment">%&#x6EE4;&#x6CE2;&#x5668;&#x53C2;&#x6570;&#xFF0C;rL&lt;1,rH&gt;1&#xFF0C;&#x53EF;&#x6839;&#x636E;&#x9700;&#x8981;&#x6548;&#x679C;&#x8C03;&#x6574;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">i</span>=<span class="number">1</span>:P</span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">j</span>=<span class="number">1</span>:Q</span><br><span class="line">        D(<span class="built_in">i</span>,<span class="built_in">j</span>)=((<span class="built_in">i</span>-n1).^<span class="number">2</span>+(<span class="built_in">j</span>-n2).^<span class="number">2</span>);</span><br><span class="line">        H(<span class="built_in">i</span>,<span class="built_in">j</span>)=(rH-rL).*(<span class="number">1</span>-<span class="built_in">exp</span>(c*(-D(<span class="built_in">i</span>,<span class="built_in">j</span>)./(d0^<span class="number">2</span>))))+rL;<span class="comment">%&#x9AD8;&#x65AF;&#x540C;&#x6001;&#x6EE4;&#x6CE2;</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">H = ifftshift(H);</span><br><span class="line">gray2 = ifft2((H.*F));<span class="comment">%&#x6EE4;&#x6CE2;&#xFF0C;&#x5085;&#x91CC;&#x53F6;&#x9006;&#x53D8;&#x6362;</span></span><br><span class="line">gray2 = gray2(<span class="number">1</span>:M,<span class="number">1</span>:N);</span><br><span class="line">gray3 = <span class="built_in">exp</span>(<span class="built_in">real</span>(gray2))<span class="number">-1</span>;<span class="comment">%&#x7531;&#x4E8E;&#x8BA1;&#x7B97;&#x8BEF;&#x5DEE;&#x4F1A;&#x4EA7;&#x751F;&#x865A;&#x90E8;&#xFF0C;&#x8FD9;&#x91CC;&#x53EA;&#x53D6;&#x5B9E;&#x90E8;</span></span><br><span class="line"></span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>);imshow(gray,[]);</span><br><span class="line">subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>);imshow(gray3,[]);title(<span class="string">&apos;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x589E;&#x5F3A;&#x540E;&apos;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"><a href="#&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;" class="headerlink" title="&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"></a>&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;</h4><ol>
+<li><p>&#x7070;&#x5EA6;&#x5316;&#xFF0C;&#x5E76;&#x8BA1;&#x7B97;&#x7070;&#x5EA6;&#x76F4;&#x65B9;&#x56FE;&#x4E0E;&#x5085;&#x91CC;&#x53F6;&#x9891;&#x8C31;&#x56FE;&#xFF1A;</p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/1.jpg" alt="1"></p>
+</li>
+<li><p>&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;</p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/2.jpg" alt="2"></p>
+</li>
+<li><p>&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x589E;&#x5F3A;</p>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/3.jpg" alt="3"></p>
+</li>
+</ol>
+<h4 id="&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"><a href="#&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;" class="headerlink" title="&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"></a>&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;</h4><p>&#x6BD4;&#x8F83;&#x5747;&#x8861;&#x5316;&#x540E;&#x548C;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x589E;&#x5F3A;&#x540E;&#x7684;&#x4E24;&#x56FE;&#x50CF;&#x53EF;&#x77E5;&#xFF0C;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x7684;&#x589E;&#x5F3A;&#x7684;&#x6548;&#x679C;&#x66F4;&#x597D;&#x4E00;&#x70B9;&#x3002;</p>
+<blockquote>
+<p>&#x5206;&#x6790;&#x539F;&#x56E0;&#xFF1A;</p>
+<ol>
+<li>&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x662F;&#x76F4;&#x63A5;&#x5BF9;&#x50CF;&#x7D20;&#x70B9;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;&#x901A;&#x8FC7;&#x51CF;&#x5C11;&#x7070;&#x5EA6;&#x7EA7;&#x6765;&#x589E;&#x52A0;&#x5BF9;&#x6BD4;&#x5EA6;&#xFF0C;&#x6240;&#x4EE5;&#x4EA7;&#x751F;&#x7684;&#x56FE;&#x50CF;&#x867D;&#x7136;&#x5BF9;&#x6BD4;&#x5EA6;&#x589E;&#x52A0;&#x4E86;&#xFF0C;&#x4F46;&#x7531;&#x4E8E;&#x7070;&#x5EA6;&#x7EA7;&#x7684;&#x51CF;&#x5C11;&#x635F;&#x5931;&#x4E86;&#x8F83;&#x591A;&#x7684;&#x4FE1;&#x606F;&#xFF0C;&#x4F7F;&#x4E4B;&#x53D8;&#x5F97;&#x6A21;&#x7CCA;&#x3002;</li>
+<li>&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x662F;&#x5728;&#x9891;&#x57DF;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;&#x901A;&#x8FC7;&#x51CF;&#x5C11;&#x4F4E;&#x9891;&#x533A;&#x4FE1;&#x53F7;&#x7684;&#x5E45;&#x5EA6;&#x6765;&#x4F7F;&#x5BF9;&#x6BD4;&#x5EA6;&#x63D0;&#x9AD8;&#xFF0C;&#x5E76;&#x6CA1;&#x6709;&#x76F4;&#x63A5;&#x5BF9;&#x50CF;&#x7D20;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;&#x6240;&#x4EE5;&#x4F7F;&#x5F97;&#x4FE1;&#x606F;&#x635F;&#x5931;&#x4E0D;&#x662F;&#x5F88;&#x660E;&#x663E;&#xFF0C;&#x4E14;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x53EF;&#x4EE5;&#x4EBA;&#x4E3A;&#x8C03;&#x8282;&#x6EE4;&#x6CE2;&#x5668;&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x4ECE;&#x800C;&#x627E;&#x5230;&#x4E00;&#x4E2A;&#x66F4;&#x5408;&#x9002;&#x7684;&#x6EE4;&#x6CE2;&#x5668;&#x4F7F;&#x56FE;&#x50CF;&#x6548;&#x679C;&#x66F4;&#x597D;&#x3002;</li>
+</ol>
+</blockquote>
+<h4 id="&#x4E03;&#x3001;&#x5B9E;&#x9A8C;&#x4E2D;&#x9047;&#x5230;&#x7684;&#x95EE;&#x9898;"><a href="#&#x4E03;&#x3001;&#x5B9E;&#x9A8C;&#x4E2D;&#x9047;&#x5230;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x4E03;&#x3001;&#x5B9E;&#x9A8C;&#x4E2D;&#x9047;&#x5230;&#x7684;&#x95EE;&#x9898;"></a>&#x4E03;&#x3001;&#x5B9E;&#x9A8C;&#x4E2D;&#x9047;&#x5230;&#x7684;&#x95EE;&#x9898;</h4><ol>
+<li><p>&#x5173;&#x4E8E;H&#x7684;&#x53CD;&#x4E2D;&#x5FC3;&#x5316;&#x5904;&#x7406;</p>
+<p>H&#x9AD8;&#x901A;&#x6EE4;&#x6CE2;&#x5668;&#x662F;&#x5173;&#x4E8E;&#x8DDD;&#x79BB;&#x4E2D;&#x5FC3;&#x70B9;&#x8DDD;&#x79BB;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x6240;&#x4EE5;&#x8981;&#x5C06;&#x5085;&#x7ACB;&#x53F6;&#x9891;&#x8C31;&#x77E9;&#x9635;&#x4E2D;&#x5FC3;&#x5316;&#xFF0C;&#x7531;&#x4E8E;&#x5728;&#x53CD;&#x53D8;&#x6362;&#x65F6;&#x8FD8;&#x8981;&#x5C06;&#x76F8;&#x4E58;&#x540E;&#x7684;&#x4E8C;&#x8005;&#x53CD;&#x4E2D;&#x5FC3;&#x5316;&#xFF0C;&#x6240;&#x4EE5;&#x53EF;&#x4EE5;&#x76F4;&#x63A5;&#x5C06;H&#x9AD8;&#x901A;&#x6EE4;&#x6CE2;&#x5668;&#x53CD;&#x4E2D;&#x5FC3;&#x5316;&#xFF0C;&#x53EF;&#x4EE5;&#x5F97;&#x5230;&#x4E00;&#x6837;&#x7684;&#x6548;&#x679C;&#x3002;</p>
+</li>
+<li><p>&#x5173;&#x4E8E;&#x6EE4;&#x6CE2;&#x5668;&#x7684;&#x53C2;&#x6570;</p>
+<p>&#x4E00;&#x5F00;&#x59CB;&#x8BBE;&#x5B9A;c&#x503C;&#x4E3A;2&#xFF0C;&#x7ED3;&#x679C;&#x56FE;&#x5374;&#x8FC7;&#x9ED1;&#xFF0C;&#x540E;&#x6765;&#x5C06;c&#x503C;&#x8BBE;&#x4E3A;0.1&#xFF0C;&#x4F7F;&#x5176;&#x4ECE;&#x4F4E;&#x9891;&#x5230;&#x9AD8;&#x9891;&#x7684;&#x8FC7;&#x5EA6;&#x6BB5;&#x53D8;&#x7F13;&#x540E;&#xFF0C;&#x8F93;&#x51FA;&#x56FE;&#x50CF;&#x6548;&#x679C;&#x660E;&#x663E;&#x3002;c&#xFF0C;d&#xFF0C;rl&#xFF0C;rh&#x7684;&#x503C;&#x5E94;&#x8BE5;&#x4E0E;&#x8F93;&#x5165;&#x56FE;&#x50CF;&#x6709;&#x5173;&#xFF0C;&#x6240;&#x4EE5;&#x6BCF;&#x6B21;&#x6EE4;&#x6CE2;&#x65F6;&#x90FD;&#x8981;&#x6839;&#x636E;&#x56FE;&#x50CF;&#x6765;&#x8BBE;&#x5B9A;&#x53C2;&#x6570;&#x3002;</p>
+</li>
+</ol>
+<h4 id="&#x516B;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"><a href="#&#x516B;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;" class="headerlink" title="&#x516B;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"></a>&#x516B;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;</h4><blockquote>
+<p><img src="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/%E7%94%B5%E5%AD%90%E7%AD%BE%E5%90%8D.png" alt="&#x7535;&#x5B50;&#x7B7E;&#x540D;"></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/matlab/" rel="tag"># matlab</a>
+              <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" rel="tag"># 图像处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/28/pytorch-learning/" rel="prev" title="pytorch-learning">
+      <i class="fa fa-chevron-left"></i> pytorch-learning
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#&#x56FE;&#x50CF;&#x5904;&#x7406;&#x7B2C;&#x4E8C;&#x6B21;&#x4F5C;&#x4E1A;"><span class="nav-number">1.</span> <span class="nav-text">&amp;#x56FE;&amp;#x50CF;&amp;#x5904;&amp;#x7406;&amp;#x7B2C;&amp;#x4E8C;&amp;#x6B21;&amp;#x4F5C;&amp;#x4E1A;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#&#x7406;&#x8BBA;&#x4F5C;&#x4E1A;"><span class="nav-number">1.0.1.</span> <span class="nav-text">&amp;#x7406;&amp;#x8BBA;&amp;#x4F5C;&amp;#x4E1A;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#&#x7F16;&#x7A0B;&#x4F5C;&#x4E1A;&#x2013;&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;&#x4E0E;&#x540C;&#x6001;&#x6EE4;&#x6CE2;&#x64CD;&#x4F5C;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E0E;&#x6548;&#x679C;&#x6BD4;&#x8F83;"><span class="nav-number">1.0.2.</span> <span class="nav-text">&amp;#x7F16;&amp;#x7A0B;&amp;#x4F5C;&amp;#x4E1A;&amp;#x2013;&amp;#x76F4;&amp;#x65B9;&amp;#x56FE;&amp;#x5747;&amp;#x8861;&amp;#x5316;&amp;#x4E0E;&amp;#x540C;&amp;#x6001;&amp;#x6EE4;&amp;#x6CE2;&amp;#x64CD;&amp;#x4F5C;&amp;#x7B97;&amp;#x6CD5;&amp;#x5B9E;&amp;#x73B0;&amp;#x4E0E;&amp;#x6548;&amp;#x679C;&amp;#x6BD4;&amp;#x8F83;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">&amp;#x4E00;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x76EE;&amp;#x7684;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">&amp;#x4E8C;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x4EEA;&amp;#x5668;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"><span class="nav-number">1.0.2.3.</span> <span class="nav-text">&amp;#x4E09;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x539F;&amp;#x7406;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-&#x76F4;&#x65B9;&#x56FE;&#x5747;&#x8861;&#x5316;"><span class="nav-number">1.0.2.3.1.</span> <span class="nav-text">1.&amp;#x76F4;&amp;#x65B9;&amp;#x56FE;&amp;#x5747;&amp;#x8861;&amp;#x5316;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-&#x540C;&#x6001;&#x6EE4;&#x6CE2;"><span class="nav-number">1.0.2.3.2.</span> <span class="nav-text">2.&amp;#x540C;&amp;#x6001;&amp;#x6EE4;&amp;#x6CE2;</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"><span class="nav-number">1.0.2.4.</span> <span class="nav-text">&amp;#x56DB;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x5185;&amp;#x5BB9;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"><span class="nav-number">1.0.2.5.</span> <span class="nav-text">&amp;#x4E94;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x7ED3;&amp;#x679C;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"><span class="nav-number">1.0.2.6.</span> <span class="nav-text">&amp;#x516D;&amp;#x3001;&amp;#x7ED3;&amp;#x679C;&amp;#x5206;&amp;#x6790;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E03;&#x3001;&#x5B9E;&#x9A8C;&#x4E2D;&#x9047;&#x5230;&#x7684;&#x95EE;&#x9898;"><span class="nav-number">1.0.2.7.</span> <span class="nav-text">&amp;#x4E03;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x4E2D;&amp;#x9047;&amp;#x5230;&amp;#x7684;&amp;#x95EE;&amp;#x9898;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x516B;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"><span class="nav-number">1.0.2.8.</span> <span class="nav-text">&amp;#x516B;&amp;#x3001;&amp;#x7535;&amp;#x5B50;&amp;#x7B7E;&amp;#x540D;</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Davinccci"
+      src="/images/luffy.jpg">
+  <p class="site-author-name" itemprop="name">Davinccci</p>
+  <div class="site-description" itemprop="description">人生碌碌，竞短论长，却不道得失有数，荣枯难量。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Davinccci</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
