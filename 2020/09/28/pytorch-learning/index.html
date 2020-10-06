@@ -28,7 +28,7 @@
 <meta property="og:description" content="pytorch &amp;#x5B98;&amp;#x65B9;&amp;#x6559;&amp;#x7A0B;&amp;#x5B66;&amp;#x4E60;&amp;#x7B14;&amp;#x8BB0; pytorch&amp;#x5B98;&amp;#x65B9;&amp;#x6559;&amp;#x7A0B;&amp;#x4E2D;&amp;#x6587;&amp;#x7248;   &amp;#x4ECB;&amp;#x7ECD;&amp;#xFF1A;  &amp;#x200B;        PyTorch&amp;#x662F;&amp;#x4">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-09-28T14:31:27.000Z">
-<meta property="article:modified_time" content="2020-10-06T14:12:14.149Z">
+<meta property="article:modified_time" content="2020-10-06T14:57:45.350Z">
 <meta property="article:author" content="Davinccci">
 <meta property="article:tag" content="pytorch">
 <meta name="twitter:card" content="summary">
@@ -196,7 +196,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-06 22:12:14" itemprop="dateModified" datetime="2020-10-06T22:12:14+08:00">2020-10-06</time>
+                <time title="修改时间：2020-10-06 22:57:45" itemprop="dateModified" datetime="2020-10-06T22:57:45+08:00">2020-10-06</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -245,6 +245,12 @@
 <li><p>&#x5982;&#x679C;&#x4F60;&#x6709;&#x4E00;&#x4E2A;&#x5143;&#x7D20; tensor ,&#x4F7F;&#x7528; <code>.item()</code> &#x6765;&#x83B7;&#x5F97;&#x8FD9;&#x4E2A; value &#x3002;</p>
 </li>
 </ul>
+<h4 id="pytorch&#x81EA;&#x52A8;&#x5FAE;&#x5206;"><a href="#pytorch&#x81EA;&#x52A8;&#x5FAE;&#x5206;" class="headerlink" title="pytorch&#x81EA;&#x52A8;&#x5FAE;&#x5206;"></a>pytorch&#x81EA;&#x52A8;&#x5FAE;&#x5206;</h4><p>autograd &#x5305;&#x662F; PyTorch &#x4E2D;&#x6240;&#x6709;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;&#x7684;&#x6838;&#x5FC3;&#x3002;</p>
+<ol>
+<li><p>TENSOR</p>
+<p>torch.Tensor &#x662F;&#x5305;&#x7684;&#x6838;&#x5FC3;&#x7C7B;&#x3002;&#x5982;&#x679C;&#x5C06;&#x5176;&#x5C5E;&#x6027; .requires_grad &#x8BBE;&#x7F6E;&#x4E3A; True,&#x5219;&#x4F1A;&#x5F00;&#x59CB;&#x8DDF;&#x8E2A;&#x9488;&#x5BF9; tensor<br>&#x7684;&#x6240;&#x6709;&#x64CD;&#x4F5C;&#x3002;&#x5B8C;&#x6210;&#x8BA1;&#x7B97;&#x540E;,&#x60A8;&#x53EF;&#x4EE5;&#x8C03;&#x7528; .backward() &#x6765;&#x81EA;&#x52A8;&#x8BA1;&#x7B97;&#x6240;&#x6709;&#x68AF;&#x5EA6;&#x3002;&#x8BE5;&#x5F20;&#x91CF;&#x7684;&#x68AF;&#x5EA6;&#x5C06;&#x7D2F;&#x79EF;&#x5230;<br>.grad &#x5C5E;&#x6027;&#x4E2D;&#x3002;<br>&#x8981;&#x505C;&#x6B62; tensor &#x5386;&#x53F2;&#x8BB0;&#x5F55;&#x7684;&#x8DDF;&#x8E2A;,&#x60A8;&#x53EF;&#x4EE5;&#x8C03;&#x7528; .detach(),&#x5B83;&#x5C06;&#x5176;&#x4E0E;&#x8BA1;&#x7B97;&#x5386;&#x53F2;&#x8BB0;&#x5F55;&#x5206;&#x79BB;,&#x5E76;&#x9632;&#x6B62;&#x5C06;&#x6765;<br>&#x7684;&#x8BA1;&#x7B97;&#x88AB;&#x8DDF;&#x8E2A;&#x3002;</p>
+</li>
+</ol>
 
     </div>
 
@@ -328,7 +334,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#pytorch-&#x5B98;&#x65B9;&#x6559;&#x7A0B;&#x5B66;&#x4E60;&#x7B14;&#x8BB0;"><span class="nav-number">1.</span> <span class="nav-text">pytorch &amp;#x5B98;&amp;#x65B9;&amp;#x6559;&amp;#x7A0B;&amp;#x5B66;&amp;#x4E60;&amp;#x7B14;&amp;#x8BB0;</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#&#x5F00;&#x59CB;&#x5165;&#x95E8;"><span class="nav-number">1.1.</span> <span class="nav-text">&amp;#x5F00;&amp;#x59CB;&amp;#x5165;&amp;#x95E8;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x5F20;&#x91CF;"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">&amp;#x5F20;&amp;#x91CF;</span></a></li></ol></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#pytorch-&#x5B98;&#x65B9;&#x6559;&#x7A0B;&#x5B66;&#x4E60;&#x7B14;&#x8BB0;"><span class="nav-number">1.</span> <span class="nav-text">pytorch &amp;#x5B98;&amp;#x65B9;&amp;#x6559;&amp;#x7A0B;&amp;#x5B66;&amp;#x4E60;&amp;#x7B14;&amp;#x8BB0;</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#&#x5F00;&#x59CB;&#x5165;&#x95E8;"><span class="nav-number">1.1.</span> <span class="nav-text">&amp;#x5F00;&amp;#x59CB;&amp;#x5165;&amp;#x95E8;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x5F20;&#x91CF;"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">&amp;#x5F20;&amp;#x91CF;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pytorch&#x81EA;&#x52A8;&#x5FAE;&#x5206;"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">pytorch&amp;#x81EA;&amp;#x52A8;&amp;#x5FAE;&amp;#x5206;</span></a></li></ol></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
