@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"davinccci.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="&amp;#x5173;&amp;#x4E8E;&amp;#x8FD0;&amp;#x884C;nvidia-smi&amp;#x62A5;&amp;#x9519;&amp;#x7684;&amp;#x95EE;&amp;#x9898;&amp;#x8FD0;&amp;#x884C;nvidia-smi&amp;#x62A5;&amp;#x9519;&amp;#xFF0C;&amp;#x663E;&amp;#x793A;&amp;#xFF1A; 1NVIDIA-SMI has failed because it couldn&amp;ap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于运行nvidia-smi报错的问题">
+<meta property="og:url" content="http://davinccci.github.io/2020/10/10/%E5%85%B3%E4%BA%8E%E8%BF%90%E8%A1%8Cnvidia-smi%E6%8A%A5%E9%94%99%E7%9A%84%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="&amp;#x5173;&amp;#x4E8E;&amp;#x8FD0;&amp;#x884C;nvidia-smi&amp;#x62A5;&amp;#x9519;&amp;#x7684;&amp;#x95EE;&amp;#x9898;&amp;#x8FD0;&amp;#x884C;nvidia-smi&amp;#x62A5;&amp;#x9519;&amp;#xFF0C;&amp;#x663E;&amp;#x793A;&amp;#xFF1A; 1NVIDIA-SMI has failed because it couldn&amp;ap">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-10-09T17:05:10.240Z">
+<meta property="article:author" content="Davinccci">
+<meta property="article:tag" content="linux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://davinccci.github.io/2020/10/10/%E5%85%B3%E4%BA%8E%E8%BF%90%E8%A1%8Cnvidia-smi%E6%8A%A5%E9%94%99%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>关于运行nvidia-smi报错的问题 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://davinccci.github.io/2020/10/10/%E5%85%B3%E4%BA%8E%E8%BF%90%E8%A1%8Cnvidia-smi%E6%8A%A5%E9%94%99%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/luffy.jpg">
+      <meta itemprop="name" content="Davinccci">
+      <meta itemprop="description" content="人生碌碌，竞短论长，却不道得失有数，荣枯难量。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于运行nvidia-smi报错的问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-10 00:00:00 / 修改时间：01:05:10" itemprop="dateCreated datePublished" datetime="2020-10-10T00:00:00+08:00">2020-10-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/problems/" itemprop="url" rel="index"><span itemprop="name">problems</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="&#x5173;&#x4E8E;&#x8FD0;&#x884C;nvidia-smi&#x62A5;&#x9519;&#x7684;&#x95EE;&#x9898;"><a href="#&#x5173;&#x4E8E;&#x8FD0;&#x884C;nvidia-smi&#x62A5;&#x9519;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x5173;&#x4E8E;&#x8FD0;&#x884C;nvidia-smi&#x62A5;&#x9519;&#x7684;&#x95EE;&#x9898;"></a>&#x5173;&#x4E8E;&#x8FD0;&#x884C;nvidia-smi&#x62A5;&#x9519;&#x7684;&#x95EE;&#x9898;</h1><h3 id="&#x8FD0;&#x884C;nvidia-smi"><a href="#&#x8FD0;&#x884C;nvidia-smi" class="headerlink" title="&#x8FD0;&#x884C;nvidia-smi"></a>&#x8FD0;&#x884C;nvidia-smi</h3><p>&#x62A5;&#x9519;&#xFF0C;&#x663E;&#x793A;&#xFF1A;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NVIDIA-SMI has failed because it couldn&apos;t communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.</span><br></pre></td></tr></table></figure>
+
+<p>&#x8FD0;&#x884C;nvcc -V,&#x53D1;&#x73B0;&#x9A71;&#x52A8;&#x8FD8;&#x5728;&#x3002;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">nvcc: NVIDIA (R) Cuda compiler driver</span><br><span class="line">Copyright (c) 2005-2017 NVIDIA Corporation</span><br><span class="line">Built on Fri_Sep__1_21:08:03_CDT_2017</span><br><span class="line">Cuda compilation tools, release 9.0, V9.0.176</span><br></pre></td></tr></table></figure>
+
+<p>&#x6309;&#x7167;<a target="_blank" rel="noopener" href="https://blog.csdn.net/hangzuxi8764/article/details/86572093">&#x7F51;&#x4E0A;&#x6559;&#x7A0B;</a></p>
+<ol>
+<li><p>sudo apt-get install dkms</p>
+</li>
+<li><p>sudo dkms install -m nvidia -v 435.21</p>
+<blockquote>
+<p>435.21&#x4E3A;&#x6211;&#x7684;&#x9A71;&#x52A8;&#x7248;&#x672C;&#xFF0C;&#x8BE5;&#x7248;&#x672C;&#x53EF;&#x4EE5;&#x5728;/usr/src&#x4E2D;&#x627E;&#x5230;</p>
+</blockquote>
+</li>
+</ol>
+<p>&#x8FD0;&#x884C;&#x540E;&#x51FA;&#x9519;&#xFF1A;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Error! Bad return status for module build on kernel: 5.4.0-48-generic (x86_64)</span><br><span class="line">Consult /var/lib/dkms/nvidia/435.21/build/make.log for more information.</span><br></pre></td></tr></table></figure>
+
+<h3 id="&#x4FEE;&#x6539;gcc&#x7248;&#x672C;&#x53F7;"><a href="#&#x4FEE;&#x6539;gcc&#x7248;&#x672C;&#x53F7;" class="headerlink" title="&#x4FEE;&#x6539;gcc&#x7248;&#x672C;&#x53F7;"></a>&#x4FEE;&#x6539;gcc&#x7248;&#x672C;&#x53F7;</h3><p>&#x4E8E;&#x662F;<a target="_blank" rel="noopener" href="https://blog.csdn.net/JerryZhang__/article/details/108865176">&#x4E0A;&#x7F51;&#x641C;&#x7D22;</a>&#x540E;&#x53D1;&#x73B0;&#xFF0C;&#x53EF;&#x80FD;&#x662F;gcc&#x7248;&#x672C;&#x53F7;&#x8FC7;&#x8001;&#x7684;&#x95EE;&#x9898;&#xFF08;&#x4E4B;&#x524D;&#x624B;&#x52A8;&#x6539;&#x8FC7;gcc&#xFF09;&#xFF0C;&#x4E8E;&#x662F;&#x8FD0;&#x884C;&#x547D;&#x4EE4;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$sudo apt install gcc-7</span><br><span class="line">$sudo update-alternatives --config gcc</span><br><span class="line"></span><br><span class="line">$sudo update-alternatives --remove-all gcc</span><br><span class="line">$sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10</span><br><span class="line">$sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc- 7 10</span><br></pre></td></tr></table></figure>
+
+<p>&#x53D1;&#x73B0;&#x8FD9;&#x6837;&#x8BBE;&#x7F6E;&#x540E;&#xFF0C;&#x518D;&#x6B21;gcc -v&#x67E5;&#x770B;&#x7248;&#x672C;&#x53F7;&#xFF0C;&#x4F9D;&#x7136;&#x662F;5.5.0&#x7248;&#x672C;&#xFF0C;&#x4E0A;&#x7F51;&#x641C;&#x7D22;&#x95EE;&#x9898;&#x3002;</p>
+<p>&#x53D1;&#x73B0;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x8F6F;&#x8FDE;&#x63A5;&#xFF1A;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /usr/local/bin gcc</span><br><span class="line">cd usr/bin</span><br><span class="line">sudo ln -s gcc-7 /usr/local/bin gcc</span><br></pre></td></tr></table></figure>
+
+<p>#&#x518D;&#x6B21;&#x8FD0;&#x884C;  </p>
+<p>gcc -v</p>
+<p>&#x53D1;&#x73B0;&#x7248;&#x672C;&#x66F4;&#x6362;&#x4E3A;7.5.0</p>
+<p>&#x8FD9;&#x65F6;&#x518D;&#x6B21;&#x8FD0;&#x884C;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms install -m nvidia -v 435.21</span><br></pre></td></tr></table></figure>
+
+<p>&#x8FD0;&#x884C;&#x6210;&#x529F;&#xFF01;</p>
+<p>&#x5B89;&#x88C5;&#x597D;&#x540E;&#xFF0C;&#x8FD0;&#x884C;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>&#x6210;&#x529F;&#xFF01;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">+-----------------------------------------------------------------------------+</span><br><span class="line">| NVIDIA-SMI 435.21       Driver Version: 435.21       CUDA Version: 10.1     |</span><br><span class="line">|-------------------------------+----------------------+----------------------+</span><br><span class="line">| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |</span><br><span class="line">| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |</span><br><span class="line">|===============================+======================+======================|</span><br><span class="line">|   0  GeForce GTX 1060    Off  | 00000000:01:00.0 Off |                  N/A |</span><br><span class="line">| N/A   51C    P0    25W /  N/A |    261MiB /  6078MiB |      1%      Default |</span><br><span class="line">+-------------------------------+----------------------+----------------------+</span><br><span class="line">                                                                               </span><br><span class="line">+-----------------------------------------------------------------------------+</span><br><span class="line">| Processes:                                                       GPU Memory |</span><br><span class="line">|  GPU       PID   Type   Process name                             Usage      |</span><br><span class="line">|=============================================================================|</span><br><span class="line">|    0      1174      G   /usr/lib/xorg/Xorg                           145MiB |</span><br><span class="line">|    0      1645      G   /usr/bin/gnome-shell                          78MiB |</span><br><span class="line">|    0      2057      G   ...-token=0F90C6D640B285852AF2759EE784E6E1     5MiB |</span><br><span class="line">|    0      2160      G   ...AAAAAAAAAAAACAAAAAAAAAA= --shared-files    28MiB |</span><br><span class="line">+-----------------------------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/06/%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E4%B8%8E%E5%90%8C%E6%80%81%E6%BB%A4%E6%B3%A2%E7%9A%84matlab%E5%AE%9E%E7%8E%B0/" rel="prev" title="直方图均衡化与同态滤波的matlab实现">
+      <i class="fa fa-chevron-left"></i> 直方图均衡化与同态滤波的matlab实现
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#&#x5173;&#x4E8E;&#x8FD0;&#x884C;nvidia-smi&#x62A5;&#x9519;&#x7684;&#x95EE;&#x9898;"><span class="nav-number">1.</span> <span class="nav-text">&amp;#x5173;&amp;#x4E8E;&amp;#x8FD0;&amp;#x884C;nvidia-smi&amp;#x62A5;&amp;#x9519;&amp;#x7684;&amp;#x95EE;&amp;#x9898;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#&#x8FD0;&#x884C;nvidia-smi"><span class="nav-number">1.0.1.</span> <span class="nav-text">&amp;#x8FD0;&amp;#x884C;nvidia-smi</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#&#x4FEE;&#x6539;gcc&#x7248;&#x672C;&#x53F7;"><span class="nav-number">1.0.2.</span> <span class="nav-text">&amp;#x4FEE;&amp;#x6539;gcc&amp;#x7248;&amp;#x672C;&amp;#x53F7;</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Davinccci"
+      src="/images/luffy.jpg">
+  <p class="site-author-name" itemprop="name">Davinccci</p>
+  <div class="site-description" itemprop="description">人生碌碌，竞短论长，却不道得失有数，荣枯难量。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Davinccci</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
