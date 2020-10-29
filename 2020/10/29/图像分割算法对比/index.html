@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"davinccci.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="&amp;#x56FE;&amp;#x50CF;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;&amp;#x5BF9;&amp;#x6BD4;&amp;#x4E00;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x76EE;&amp;#x7684; &amp;#x4E86;&amp;#x89E3;&amp;#x5206;&amp;#x6C34;&amp;#x5CAD;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;&amp;#x3001;mean sh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图像分割算法对比">
+<meta property="og:url" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="&amp;#x56FE;&amp;#x50CF;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;&amp;#x5BF9;&amp;#x6BD4;&amp;#x4E00;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x76EE;&amp;#x7684; &amp;#x4E86;&amp;#x89E3;&amp;#x5206;&amp;#x6C34;&amp;#x5CAD;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;&amp;#x3001;mean sh">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/baboon.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/lena.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/luffy.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x6743;&#x91CD;&#x56FE;.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E5%85%AC%E5%BC%8F1.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E5%85%AC%E5%BC%8F2.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;2.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/graph_cuts.jpg">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-baboon.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-bamboon.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts-baboon.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-baboon.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-lena.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-leNA.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts%20-lena.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-lena.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-luffy.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-luffy.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts%20-luffy.PNG">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-luffy.png">
+<meta property="og:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E7%94%B5%E5%AD%90%E7%AD%BE%E5%90%8D.png">
+<meta property="article:published_time" content="2020-10-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-10-29T14:56:06.640Z">
+<meta property="article:author" content="Davinccci">
+<meta property="article:tag" content="图像处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/baboon.jpg">
+
+<link rel="canonical" href="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图像分割算法对比 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://davinccci.github.io/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/luffy.jpg">
+      <meta itemprop="name" content="Davinccci">
+      <meta itemprop="description" content="人生碌碌，竞短论长，却不道得失有数，荣枯难量。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图像分割算法对比
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-29 00:00:00 / 修改时间：22:56:06" itemprop="dateCreated datePublished" datetime="2020-10-29T00:00:00+08:00">2020-10-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/matlab/" itemprop="url" rel="index"><span itemprop="name">matlab</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x5BF9;&#x6BD4;"><a href="#&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x5BF9;&#x6BD4;" class="headerlink" title="&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x5BF9;&#x6BD4;"></a>&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x5BF9;&#x6BD4;</h1><h4 id="&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"><a href="#&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;" class="headerlink" title="&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"></a>&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;</h4><ol>
+<li>&#x4E86;&#x89E3;&#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x3001;mean shift&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x3001;Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;&#xFF0C;Graphcuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x7684;&#x539F;&#x7406;</li>
+<li>&#x901A;&#x8FC7;Matlab&#x7F16;&#x7A0B;&#x5B9E;&#x73B0;&#x4F7F;&#x7528;&#x6307;&#x5B9A;&#x7B97;&#x6CD5;&#x5BF9;&#x7ED9;&#x5B9A;&#x56FE;&#x50CF;&#x7684;&#x5206;&#x5272;&#xFF0C;&#x5E76;&#x6BD4;&#x8F83;&#x6548;&#x679C;</li>
+</ol>
+<h4 id="&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"><a href="#&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;" class="headerlink" title="&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"></a>&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;</h4><ol>
+<li><p>&#x8BA1;&#x7B97;&#x673A;</p>
+</li>
+<li><p>Matlab&#x7A0B;&#x5E8F;</p>
+</li>
+<li><p>&#x5B9E;&#x9A8C;&#x539F;&#x56FE;&#x50CF;&#xFF1A;</p>
+<ul>
+<li><p>&#x56FE;&#x50CF;1&#xFF1A;</p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/baboon.jpg" alt="baboon"></p>
+</li>
+<li><p>&#x56FE;&#x50CF;2&#xFF1A;</p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/lena.jpg" alt="lena"></p>
+</li>
+<li><p>&#x56FE;&#x50CF;3&#xFF1A;</p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/luffy.jpg" alt="luffy"></p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"><a href="#&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;" class="headerlink" title="&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"></a>&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;</h4><h5 id="1-&#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><a href="#1-&#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;" class="headerlink" title="1. &#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;"></a>1. &#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;</h5><p>&#x200B;        &#x5206;&#x6C34;&#x5CAD;&#x7B97;&#x6CD5;(Watershed)&#x57FA;&#x672C;&#x601D;&#x60F3;&#x662F;&#x628A;&#x56FE;&#x50CF;&#x770B;&#x4F5C;&#x662F;&#x6D4B;&#x5730;&#x5B66;&#x4E0A;&#x7684;&#x62D3;&#x6251;&#x5730;&#x8C8C;&#xFF0C;&#x56FE;&#x50CF;&#x4E2D;&#x6BCF;&#x4E00;&#x70B9;&#x50CF;&#x7D20;&#x7684;&#x7070;&#x5EA6;&#x503C;&#x8868;&#x793A;&#x8BE5;&#x70B9;&#x7684;&#x6D77;&#x62D4;&#x9AD8;&#x5EA6;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x5C40;&#x90E8;&#x6781;&#x5C0F;&#x503C;&#x53CA;&#x5176;&#x5F71;&#x54CD;&#x533A;&#x57DF;&#x79F0;&#x4E3A;&#x96C6;&#x6C34;&#x76C6;&#xFF0C;&#x800C;&#x96C6;&#x6C34;&#x76C6;&#x7684;&#x8FB9;&#x754C;&#x5219;&#x5F62;&#x6210;&#x5206;&#x6C34;&#x5CAD;&#x3002;&#x5206;&#x6C34;&#x5CAD;&#x7684;&#x6982;&#x5FF5;&#x548C;&#x5F62;&#x6210;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x6A21;&#x62DF;&#x6D78;&#x5165;&#x8FC7;&#x7A0B;&#x6765;&#x8BF4;&#x660E;&#x3002;&#x5728;&#x6BCF;&#x4E00;&#x4E2A;&#x5C40;&#x90E8;&#x6781;&#x5C0F;&#x503C;&#x8868;&#x9762;&#xFF0C;&#x523A;&#x7A7F;&#x4E00;&#x4E2A;&#x5C0F;&#x5B54;&#xFF0C;&#x7136;&#x540E;&#x628A;&#x6574;&#x4E2A;&#x6A21;&#x578B;&#x6162;&#x6162;&#x6D78;&#x5165;&#x6C34;&#x4E2D;&#xFF0C;&#x968F;&#x7740;&#x6D78;&#x5165;&#x7684;&#x52A0;&#x6DF1;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x5C40;&#x90E8;&#x6781;&#x5C0F;&#x503C;&#x7684;&#x5F71;&#x54CD;&#x57DF;&#x6162;&#x6162;&#x5411;&#x5916;&#x6269;&#x5C55;&#xFF0C;&#x5728;&#x4E24;&#x4E2A;&#x96C6;&#x6C34;&#x76C6;&#x6C47;&#x5408;&#x5904;&#x6784;&#x7B51;&#x5927;&#x575D;&#xFF0C;&#x5373;&#x5F62;&#x6210;&#x5206;&#x6C34;&#x5CAD;&#x3002;<br> &#x5206;&#x6C34;&#x5CAD;&#x7B97;&#x6CD5;&#x5BF9;&#x5FAE;&#x5F31;&#x8FB9;&#x7F18;&#x5177;&#x6709;&#x826F;&#x597D;&#x7684;&#x54CD;&#x5E94;&#xFF0C;&#x56FE;&#x50CF;&#x4E2D;&#x7684;&#x566A;&#x58F0;&#x3001;&#x7269;&#x4F53;&#x8868;&#x9762;&#x7EC6;&#x5FAE;&#x7684;&#x7070;&#x5EA6;&#x53D8;&#x5316;&#xFF0C;&#x90FD;&#x4F1A;&#x4EA7;&#x751F;&#x8FC7;&#x5EA6;&#x5206;&#x5272;&#x7684;&#x73B0;&#x8C61;&#x3002;</p>
+<ul>
+<li>&#x603B;&#x7684;&#x6982;&#x62EC;&#x4E00;&#x4E0B;watershed&#x56FE;&#x50CF;&#x81EA;&#x52A8;&#x5206;&#x5272;&#x7684;&#x5B9E;&#x73B0;&#x6B65;&#x9AA4;&#xFF1A;</li>
+</ul>
+<ol>
+<li>&#x56FE;&#x50CF;&#x7070;&#x5EA6;&#x5316;&#x3001;&#x6EE4;&#x6CE2;&#x3001;Canny&#x8FB9;&#x7F18;&#x68C0;&#x6D4B;</li>
+<li>&#x67E5;&#x627E;&#x8F6E;&#x5ED3;&#xFF0C;&#x5E76;&#x4E14;&#x628A;&#x8F6E;&#x5ED3;&#x4FE1;&#x606F;&#x6309;&#x7167;&#x4E0D;&#x540C;&#x7684;&#x7F16;&#x53F7;&#x7ED8;&#x5236;&#x5230;watershed&#x7684;&#x7B2C;&#x4E8C;&#x4E2A;&#x5165;&#x53C2;merkers&#x4E0A;&#xFF0C;&#x76F8;&#x5F53;&#x4E8E;&#x6807;&#x8BB0;&#x6CE8;&#x6C34;&#x70B9;&#x3002;</li>
+<li>watershed&#x5206;&#x6C34;&#x5CAD;&#x8FD0;&#x7B97;</li>
+<li>&#x7ED8;&#x5236;&#x5206;&#x5272;&#x51FA;&#x6765;&#x7684;&#x533A;&#x57DF;&#xFF0C;&#x89C6;&#x89C9;&#x63A7;&#x8FD8;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;&#x968F;&#x673A;&#x989C;&#x8272;&#x586B;&#x5145;&#xFF0C;&#x6216;&#x8005;&#x8DDF;&#x539F;&#x59CB;&#x56FE;&#x50CF;&#x878D;&#x5408;&#x4EE5;&#x4E0B;&#xFF0C;&#x4EE5;&#x5F97;&#x5230;&#x66F4;&#x597D;&#x7684;&#x663E;&#x793A;&#x6548;&#x679C;&#x3002;</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/dcrmg/article/details/52498440">&#x53C2;&#x8003;&#x94FE;&#x63A5;</a></p>
+<h5 id="2-mean-shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><a href="#2-mean-shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;" class="headerlink" title="2.mean shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;"></a>2.mean shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;</h5><p>meanshift&#x5747;&#x503C;&#x504F;&#x79FB;&#x7B97;&#x6CD5;&#x7684;&#x5B9E;&#x8D28;&#x662F;&#x805A;&#x7C7B;&#xFF0C;&#x7B80;&#x5355;&#x7684;&#x8BF4;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x6709;&#x4E00;&#x4E2A;&#x70B9; x,&#x5B83;&#x7684;&#x5468;&#x56F4;&#x6709;&#x5F88;&#x591A;&#x4E2A;&#x70B9; xi&#xFF0C; &#x6211;&#x4EEC;&#x8BA1;&#x7B97;&#x70B9; x&#x79FB;&#x52A8;&#x5230;&#x6BCF;&#x4E2A;&#x70B9; xi &#x6240;&#x9700;&#x8981;&#x7684;&#x504F;&#x79FB;&#x91CF;&#x4E4B;&#x548C;&#xFF0C;&#x6C42;&#x5E73;&#x5747;&#xFF0C;&#x5C31;&#x5F97;&#x5230;&#x5E73;&#x5747;&#x504F;&#x79FB;&#x91CF;&#xFF0C;&#xFF08;&#x8BE5;&#x504F;&#x79FB;&#x91CF;&#x7684;&#x65B9;&#x5411;&#x662F;&#x5468;&#x56F4;&#x70B9;&#x5206;&#x5E03;&#x5BC6;&#x96C6;&#x7684;&#x65B9;&#x5411;&#xFF09;&#x8BE5;&#x504F;&#x79FB;&#x91CF;&#x662F;&#x5305;&#x542B;&#x5927;&#x5C0F;&#x548C;&#x65B9;&#x5411;&#x7684;&#x3002;&#x7136;&#x540E;&#x70B9; x &#x5C31;&#x5F80;&#x5E73;&#x5747;&#x504F;&#x79FB;&#x91CF;&#x65B9;&#x5411;&#x79FB;&#x52A8;&#xFF0C;&#x518D;&#x4EE5;&#x6B64;&#x4E3A;&#x65B0;&#x7684;&#x8D77;&#x70B9;&#x4E0D;&#x65AD;&#x8FED;&#x4EE3;&#x76F4;&#x5230;&#x6EE1;&#x8DB3;&#x4E00;&#x5B9A;&#x6761;&#x4EF6;&#x7ED3;&#x675F;&#x3002;</p>
+<p>&#x901A;&#x8FC7;&#x4EE5;&#x4E0A;&#x4E00;&#x7CFB;&#x5217;&#x64CD;&#x4F5C;&#x4E4B;&#x540E;&#xFF0C;&#x5373;&#x53EF;&#x5BF9;&#x70B9;&#x5B8C;&#x6210;&#x805A;&#x7C7B;&#xFF0C;&#x6700;&#x7EC8;&#x5728;&#x56FE;&#x50CF;&#x4E0A;&#x7684;&#x6548;&#x679C;&#x5373;&#x4E3A;&#x4F7F;&#x56FE;&#x50CF;&#x53D8;&#x5F97;&#x5E73;&#x6ED1;&#x3002;&#x5728;&#x6B64;&#x4E4B;&#x540E;&#xFF0C;&#x901A;&#x8FC7;&#x6F2B;&#x6C34;&#x5904;&#x7406;&#xFF0C;&#x5373;&#x53EF;&#x5B9E;&#x73B0;&#x56FE;&#x50CF;&#x7684;&#x5206;&#x5272;&#x3002;</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/guoyunfei20/article/details/78729490?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param">&#x53C2;&#x8003;&#x94FE;&#x63A5;1</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/csdnforyou/article/details/81161840">&#x53C2;&#x8003;&#x94FE;&#x63A5;2</a></p>
+<h5 id="3-Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;"><a href="#3-Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;" class="headerlink" title="3.Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;"></a>3.Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;</h5><p>&#x5F52;&#x4E00;&#x5316;&#x5207;&#x5272;Normalized cut &#x662F;&#x4E00;&#x79CD;&#x5206;&#x7FA4;(cluster grouping)&#x6280;&#x672F;&#xFF0C;&#x5728;&#x6570;&#x636E;&#x5904;&#x7406;&#x548C;&#x56FE;&#x50CF;&#x5904;&#x7406;&#x65B9;&#x9762;&#x6709;&#x5F88;&#x5E7F;&#x7684;&#x8FD0;&#x7528;</p>
+<p>&#x7528;&#x5176;&#x5B9E;&#x73B0;&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7684;&#x601D;&#x8DEF;&#x662F;&#xFF0C;&#x628A;&#x4E00;&#x4E2A;&#x56FE;&#x7247;&#x770B;&#x6210;&#x4E00;&#x4E2A;&#x56FE;(graph), &#x7136;&#x540E;&#x8BA1;&#x7B97;&#x6743;&#x91CD;&#x56FE;(weighted graph)&#xFF0C;&#x7136;&#x540E;&#x5206;&#x5272;&#x6210;&#x4E00;&#x4E9B;&#x5177;&#x6709;&#x76F8;&#x540C;&#x7279;&#x5F81;&#xFF08;&#x7EB9;&#x7406;&#xFF0C; &#x989C;&#x8272;&#xFF0C;&#x660E;&#x5EA6;&#x7B49;&#xFF09;&#x7684;&#x533A;&#x57DF;&#x3002;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x6743;&#x91CD;&#x56FE;.png" alt="&#x6743;&#x91CD;&#x56FE;" style="zoom:50%;">
+
+<p>&#x6211;&#x4EEC;&#x628A;&#x8FD9;&#x4E2A;&#x56FE;&#x5206;&#x6210;&#x4E24;&#x4E2A;&#x5B50;&#x96C6;&#x5DE6;&#x4FA7;&#x7684;A&#x548C;&#x53F3;&#x4FA7;&#x7684;B, &#x901A;&#x8FC7;&#x89C2;&#x5BDF;&#xFF0C;A&#x7531;4&#x4E2A;&#x9876;&#x70B9;&#x7EC4;&#x6210;&#xFF0C;B&#x7531;5&#x4E2A;&#x9876;&#x70B9;&#x7EC4;&#x6210;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x540C;&#x5C5E;&#x4E8E;&#x4E00;&#x4E2A;&#x5B50;&#x96C6;&#x4E2D;&#x7684;&#x9876;&#x70B9;&#x4E4B;&#x95F4;&#x7684;&#x8FB9;&#x7684;&#x6743;&#x91CD;&#x7684;&#x503C;&#x76F8;&#x5BF9;&#x6765;&#x8BF4;&#x4F1A;&#x5927;&#x4E00;&#x4E9B;&#x3002;&#x5B50;&#x96C6;&#x4E0E;&#x5B50;&#x96C6;&#x76F4;&#x63A5;&#x7684;&#x70B9;&#x7684;&#x8FB9;&#x4E0A;&#x7684;&#x6743;&#x91CD;&#x4F1A;&#x5C0F;&#xFF0C; &#x8FD9;&#x4E2A;&#x7279;&#x6027;&#x4E5F;&#x5C31;&#x662F;normalized cut&#x80FD;&#x5206;&#x5272;&#x533A;&#x57DF;&#x7684;&#x57FA;&#x7840;&#x4E86;&#x3002;&#x8FD9;&#x5F20;&#x56FE;&#x8868;&#x793A;&#x662F;&#xFF0C;&#x76F8;&#x8FD1;&#x7684;&#x70B9;&#x4E4B;&#x95F4;&#x7684;&#x6743;&#x91CD;&#x5927;&#x3002;&#x4F46;&#x662F;&#x5B9E;&#x9645;&#x8FD0;&#x7528;&#x4E2D;&#xFF0C;&#x8DDD;&#x79BB;&#x5E76;&#x4E0D;&#x662F;&#x8861;&#x91CF;&#x6743;&#x91CD;&#x7684;&#x552F;&#x4E00;&#x6807;&#x51C6;&#x3002;&#x5982;&#x4F55;&#x8BA1;&#x7B97;&#x6743;&#x91CD;&#x662F;&#x5177;&#x4F53;&#x9879;&#x76EE;&#x5177;&#x4F53;&#x8BBE;&#x8BA1;&#x7684;&#x4E86;&#x3002;</p>
+<p>&#x60F3;&#x8981;&#x7406;&#x89E3;normalized cut &#x9700;&#x8981;&#x5148;&#x7406;&#x89E3;&#x4EC0;&#x4E48;&#x662F;&#x5206;&#x5272;(cut)&#x4E0E;&#x6700;&#x5C0F;&#x5316;&#x5206;&#x5272;&#xFF08;min cut)&#xFF1A;&#x628A;G = (V,E) &#x5206;&#x6210;&#x4E24;&#x4E2A;&#x5B50;&#x96C6;A,B,&#x4EE4;&#xFF1A;</p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E5%85%AC%E5%BC%8F1.png" alt="&#x516C;&#x5F0F;1"></p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E5%85%AC%E5%BC%8F2.png" alt="&#x516C;&#x5F0F;2"></p>
+<p>&#x5176;&#x4E2D;, w(u,v)&#x5C31;&#x662F;&#x6743;&#x91CD;(weight), &#x6700;&#x5C0F;&#x5316;&#x5206;&#x5272;&#x5C31;&#x662F;&#x8BA9;&#x4E0A;&#x5F0F;&#x7684;&#x503C;&#x6700;&#x5C0F;&#x7684;&#x5206;&#x5272;&#x3002;&#x800C;&#x6700;&#x5C0F;&#x5316;&#x5207;&#x5272;&#x662F;&#x6709;&#x504F;&#x5DEE;&#x7684;&#xFF0C;&#x60F3;&#x8981;&#x53BB;&#x9664;&#x504F;&#x5DEE;&#x5C31;&#x8981;&#x5F15;&#x5165;&#x5F52;&#x4E00;&#x5316;&#x5207;&#x5272;&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;.png" alt="&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;" style="zoom:50%;">
+
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;2.png" alt="&#x5F52;&#x4E00;&#x5316;&#x5206;&#x5272;2" style="zoom:50%;">
+
+<p>assoc(A,V)&#x7684;&#x542B;&#x4E49;&#x662F;A&#x4E2D;&#x6240;&#x6709;&#x70B9;&#x5230;&#x56FE;&#x4E2D;&#x505A;&#x6709;&#x70B9;&#x7684;&#x6743;&#x91CD;&#x7684;&#x548C;&#x3002;&#x901A;&#x8FC7;&#x4E0A;&#x9762;&#x7684;&#x516C;&#x5F0F;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x5F88;&#x6E05;&#x6670;&#x7684;&#x770B;&#x5230;<strong>Ncut&#x5728;&#x8FFD;&#x6C42;&#x4E0D;&#x540C;&#x5B50;&#x96C6;&#x95F4;&#x70B9;&#x7684;&#x6743;&#x91CD;&#x6700;&#x5C0F;&#x503C;&#x7684;&#x540C;&#x65F6;&#x4E5F;&#x8FFD;&#x6C42;&#x540C;&#x4E00;&#x5B50;&#x96C6;&#x95F4;&#x70B9;&#x7684;&#x6743;&#x91CD;&#x6700;&#x5927;&#x503C;</strong> </p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38476684/article/details/80553850">&#x53C2;&#x8003;&#x94FE;&#x63A5;1</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/c-happy/p/6422766.html">&#x53C2;&#x8003;&#x94FE;&#x63A5;2</a></p>
+<h5 id="4-Graph-cuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><a href="#4-Graph-cuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;" class="headerlink" title="4.Graph cuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;"></a>4.Graph cuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;</h5><p>&#x200B;        Graph cuts&#x662F;&#x4E00;&#x79CD;&#x5341;&#x5206;&#x6709;&#x7528;&#x548C;&#x6D41;&#x884C;&#x7684;&#x80FD;&#x91CF;&#x4F18;&#x5316;&#x7B97;&#x6CD5;&#xFF0C;&#x5728;&#x8BA1;&#x7B97;&#x673A;&#x89C6;&#x89C9;&#x9886;&#x57DF;&#x666E;&#x904D;&#x5E94;&#x7528;&#x4E8E;&#x524D;&#x80CC;&#x666F;&#x5206;&#x5272;&#xFF08;Image segmentation&#xFF09;&#x3001;&#x7ACB;&#x4F53;&#x89C6;&#x89C9;&#xFF08;stereo vision&#xFF09;&#x3001;&#x62A0;&#x56FE;&#xFF08;Image matting&#xFF09;&#x7B49;&#x3002;</p>
+<p>&#x200B;        &#x6B64;&#x7C7B;&#x65B9;&#x6CD5;&#x628A;&#x56FE;&#x50CF;&#x5206;&#x5272;&#x95EE;&#x9898;&#x4E0E;&#x56FE;&#x7684;&#x6700;&#x5C0F;&#x5272;&#xFF08;min cut&#xFF09;&#x95EE;&#x9898;&#x76F8;&#x5173;&#x8054;&#x3002;&#x9996;&#x5148;&#x7528;&#x4E00;&#x4E2A;&#x65E0;&#x5411;&#x56FE;G=&lt;V&#xFF0C;E&gt;&#x8868;&#x793A;&#x8981;&#x5206;&#x5272;&#x7684;&#x56FE;&#x50CF;&#xFF0C;V&#x548C;E&#x5206;&#x522B;&#x662F;&#x9876;&#x70B9;&#xFF08;vertex&#xFF09;&#x548C;&#x8FB9;&#xFF08;edge&#xFF09;&#x7684;&#x96C6;&#x5408;&#x3002;&#x6B64;&#x5904;&#x7684;Graph&#x548C;&#x666E;&#x901A;&#x7684;Graph&#x7A0D;&#x6709;&#x4E0D;&#x540C;&#x3002;&#x666E;&#x901A;&#x7684;&#x56FE;&#x7531;&#x9876;&#x70B9;&#x548C;&#x8FB9;&#x6784;&#x6210;&#xFF0C;&#x5982;&#x679C;&#x8FB9;&#x7684;&#x6709;&#x65B9;&#x5411;&#x7684;&#xFF0C;&#x8FD9;&#x6837;&#x7684;&#x56FE;&#x88AB;&#x5219;&#x79F0;&#x4E3A;&#x6709;&#x5411;&#x56FE;&#xFF0C;&#x5426;&#x5219;&#x4E3A;&#x65E0;&#x5411;&#x56FE;&#xFF0C;&#x4E14;&#x8FB9;&#x662F;&#x6709;&#x6743;&#x503C;&#x7684;&#xFF0C;&#x4E0D;&#x540C;&#x7684;&#x8FB9;&#x53EF;&#x4EE5;&#x6709;&#x4E0D;&#x540C;&#x7684;&#x6743;&#x503C;&#xFF0C;&#x5206;&#x522B;&#x4EE3;&#x8868;&#x4E0D;&#x540C;&#x7684;&#x7269;&#x7406;&#x610F;&#x4E49;&#x3002;&#x800C;Graph Cuts&#x56FE;&#x662F;&#x5728;&#x666E;&#x901A;&#x56FE;&#x7684;&#x57FA;&#x7840;&#x4E0A;&#x591A;&#x4E86;2&#x4E2A;&#x9876;&#x70B9;&#xFF0C;&#x8FD9;2&#x4E2A;&#x9876;&#x70B9;&#x5206;&#x522B;&#x7528;&#x7B26;&#x53F7;&#x201D;S&#x201D;&#x548C;&#x201D;T&#x201D;&#x8868;&#x793A;&#xFF0C;&#x7EDF;&#x79F0;&#x4E3A;&#x7EC8;&#x7AEF;&#x9876;&#x70B9;&#x3002;&#x5176;&#x5B83;&#x6240;&#x6709;&#x7684;&#x9876;&#x70B9;&#x90FD;&#x5FC5;&#x987B;&#x548C;&#x8FD9;2&#x4E2A;&#x9876;&#x70B9;&#x76F8;&#x8FDE;&#x5F62;&#x6210;&#x8FB9;&#x96C6;&#x5408;&#x4E2D;&#x7684;&#x4E00;&#x90E8;&#x5206;&#x3002;&#x6240;&#x4EE5;Graph Cuts&#x4E2D;&#x6709;&#x4E24;&#x79CD;&#x9876;&#x70B9;&#xFF0C;&#x4E5F;&#x6709;&#x4E24;&#x79CD;&#x8FB9;&#x3002;</p>
+<p><strong>&#x7B2C;&#x4E00;&#x79CD;&#x9876;&#x70B9;&#x548C;&#x8FB9;&#x662F;&#xFF1A;</strong>&#x7B2C;&#x4E00;&#x79CD;&#x666E;&#x901A;&#x9876;&#x70B9;&#x5BF9;&#x5E94;&#x4E8E;&#x56FE;&#x50CF;&#x4E2D;&#x7684;&#x6BCF;&#x4E2A;&#x50CF;&#x7D20;&#x3002;&#x6BCF;&#x4E24;&#x4E2A;&#x90BB;&#x57DF;&#x9876;&#x70B9;&#xFF08;&#x5BF9;&#x5E94;&#x4E8E;&#x56FE;&#x50CF;&#x4E2D;&#x6BCF;&#x4E24;&#x4E2A;&#x90BB;&#x57DF;&#x50CF;&#x7D20;&#xFF09;&#x7684;&#x8FDE;&#x63A5;&#x5C31;&#x662F;&#x4E00;&#x6761;&#x8FB9;&#x3002;&#x8FD9;&#x79CD;&#x8FB9;&#x4E5F;&#x53EB;n-links&#x3002;</p>
+<p><strong>&#x7B2C;&#x4E8C;&#x79CD;&#x9876;&#x70B9;&#x548C;&#x8FB9;&#x662F;&#xFF1A;</strong>&#x9664;&#x56FE;&#x50CF;&#x50CF;&#x7D20;&#x5916;&#xFF0C;&#x8FD8;&#x6709;&#x53E6;&#x5916;&#x4E24;&#x4E2A;&#x7EC8;&#x7AEF;&#x9876;&#x70B9;&#xFF0C;&#x53EB;S&#xFF08;source&#xFF1A;&#x6E90;&#x70B9;&#xFF0C;&#x53D6;&#x6E90;&#x5934;&#x4E4B;&#x610F;&#xFF09;&#x548C;T&#xFF08;sink&#xFF1A;&#x6C47;&#x70B9;&#xFF0C;&#x53D6;&#x6C47;&#x805A;&#x4E4B;&#x610F;&#xFF09;&#x3002;&#x6BCF;&#x4E2A;&#x666E;&#x901A;&#x9876;&#x70B9;&#x548C;&#x8FD9;2&#x4E2A;&#x7EC8;&#x7AEF;&#x9876;&#x70B9;&#x4E4B;&#x95F4;&#x90FD;&#x6709;&#x8FDE;&#x63A5;&#xFF0C;&#x7EC4;&#x6210;&#x7B2C;&#x4E8C;&#x79CD;&#x8FB9;&#x3002;&#x8FD9;&#x79CD;&#x8FB9;&#x4E5F;&#x53EB;t-links&#x3002;</p>
+<p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/graph_cuts.jpg" alt="graph_cuts"></p>
+<p>&#x200B;        &#x4E0A;&#x56FE;&#x5C31;&#x662F;&#x4E00;&#x4E2A;&#x56FE;&#x50CF;&#x5BF9;&#x5E94;&#x7684;s-t&#x56FE;&#xFF0C;&#x6BCF;&#x4E2A;&#x50CF;&#x7D20;&#x5BF9;&#x5E94;&#x56FE;&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x76F8;&#x5E94;&#x9876;&#x70B9;&#xFF0C;&#x53E6;&#x5916;&#x8FD8;&#x6709;s&#x548C;t&#x4E24;&#x4E2A;&#x9876;&#x70B9;&#x3002;&#x4E0A;&#x56FE;&#x6709;&#x4E24;&#x79CD;&#x8FB9;&#xFF0C;&#x5B9E;&#x7EBF;&#x7684;&#x8FB9;&#x8868;&#x793A;&#x6BCF;&#x4E24;&#x4E2A;&#x90BB;&#x57DF;&#x666E;&#x901A;&#x9876;&#x70B9;&#x8FDE;&#x63A5;&#x7684;&#x8FB9;n-links&#xFF0C;&#x865A;&#x7EBF;&#x7684;&#x8FB9;&#x8868;&#x793A;&#x6BCF;&#x4E2A;&#x666E;&#x901A;&#x9876;&#x70B9;&#x4E0E;s&#x548C;t&#x8FDE;&#x63A5;&#x7684;&#x8FB9;t-links&#x3002;&#x5728;&#x524D;&#x540E;&#x666F;&#x5206;&#x5272;&#x4E2D;&#xFF0C;s&#x4E00;&#x822C;&#x8868;&#x793A;&#x524D;&#x666F;&#x76EE;&#x6807;&#xFF0C;t&#x4E00;&#x822C;&#x8868;&#x793A;&#x80CC;&#x666F;&#x3002;</p>
+<p>&#x200B;        &#x56FE;&#x4E2D;&#x6BCF;&#x6761;&#x8FB9;&#x90FD;&#x6709;&#x4E00;&#x4E2A;&#x975E;&#x8D1F;&#x7684;&#x6743;&#x503C;we&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A;cost&#xFF08;&#x4EE3;&#x4EF7;&#x6216;&#x8005;&#x8D39;&#x7528;&#xFF09;&#x3002;&#x4E00;&#x4E2A;cut&#xFF08;&#x5272;&#xFF09;&#x5C31;&#x662F;&#x56FE;&#x4E2D;&#x8FB9;&#x96C6;&#x5408;E&#x7684;&#x4E00;&#x4E2A;&#x5B50;&#x96C6;C&#xFF0C;&#x90A3;&#x8FD9;&#x4E2A;&#x5272;&#x7684;cost&#xFF08;&#x8868;&#x793A;&#x4E3A;|C|&#xFF09;&#x5C31;&#x662F;&#x8FB9;&#x5B50;&#x96C6;C&#x7684;&#x6240;&#x6709;&#x8FB9;&#x7684;&#x6743;&#x503C;&#x7684;&#x603B;&#x548C;&#x3002;</p>
+<p>&#x200B;         Graph Cuts&#x4E2D;&#x7684;Cuts&#x662F;&#x6307;&#x8FD9;&#x6837;&#x4E00;&#x4E2A;&#x8FB9;&#x7684;&#x96C6;&#x5408;&#xFF0C;&#x5F88;&#x663E;&#x7136;&#x8FD9;&#x4E9B;&#x8FB9;&#x96C6;&#x5408;&#x5305;&#x62EC;&#x4E86;&#x4E0A;&#x9762;2&#x79CD;&#x8FB9;&#xFF0C;&#x8BE5;&#x96C6;&#x5408;&#x4E2D;&#x6240;&#x6709;&#x8FB9;&#x7684;&#x65AD;&#x5F00;&#x4F1A;&#x5BFC;&#x81F4;&#x6B8B;&#x7559;&#x201D;S&#x201D;&#x548C;&#x201D;T&#x201D;&#x56FE;&#x7684;&#x5206;&#x5F00;&#xFF0C;&#x6240;&#x4EE5;&#x5C31;&#x79F0;&#x4E3A;&#x201C;&#x5272;&#x201D;&#x3002;&#x5982;&#x679C;&#x4E00;&#x4E2A;&#x5272;&#xFF0C;&#x5B83;&#x7684;&#x8FB9;&#x7684;&#x6240;&#x6709;&#x6743;&#x503C;&#x4E4B;&#x548C;&#x6700;&#x5C0F;&#xFF0C;&#x90A3;&#x4E48;&#x8FD9;&#x4E2A;&#x5C31;&#x79F0;&#x4E3A;&#x6700;&#x5C0F;&#x5272;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x56FE;&#x5272;&#x7684;&#x7ED3;&#x679C;&#x3002;&#x800C;&#x798F;&#x7279;-&#x5BCC;&#x514B;&#x68EE;&#x5B9A;&#x7406;&#x8868;&#x660E;&#xFF0C;&#x7F51;&#x8DEF;&#x7684;&#x6700;&#x5927;&#x6D41;max flow&#x4E0E;&#x6700;&#x5C0F;&#x5272;min cut&#x76F8;&#x7B49;&#x3002;&#x6240;&#x4EE5;&#x7531;Boykov&#x548C;Kolmogorov&#x53D1;&#x660E;&#x7684;max-flow/min-cut&#x7B97;&#x6CD5;&#x5C31;&#x53EF;&#x4EE5;&#x7528;&#x6765;&#x83B7;&#x5F97;s-t&#x56FE;&#x7684;&#x6700;&#x5C0F;&#x5272;&#x3002;&#x8FD9;&#x4E2A;&#x6700;&#x5C0F;&#x5272;&#x628A;&#x56FE;&#x7684;&#x9876;&#x70B9;&#x5212;&#x5206;&#x4E3A;&#x4E24;&#x4E2A;&#x4E0D;&#x76F8;&#x4EA4;&#x7684;&#x5B50;&#x96C6;S&#x548C;T&#xFF0C;&#x5176;&#x4E2D;s &#x2208;S&#xFF0C;t&#x2208; T&#x548C;S&#x222A;T=V &#x3002;&#x8FD9;&#x4E24;&#x4E2A;&#x5B50;&#x96C6;&#x5C31;&#x5BF9;&#x5E94;&#x4E8E;&#x56FE;&#x50CF;&#x7684;&#x524D;&#x666F;&#x50CF;&#x7D20;&#x96C6;&#x548C;&#x80CC;&#x666F;&#x50CF;&#x7D20;&#x96C6;&#xFF0C;&#x90A3;&#x5C31;&#x76F8;&#x5F53;&#x4E8E;&#x5B8C;&#x6210;&#x4E86;&#x56FE;&#x50CF;&#x5206;&#x5272;&#x3002; </p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zouxy09/article/details/8532111?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-4.channel_param&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-4.channel_param">&#x53C2;&#x8003;&#x94FE;&#x63A5;1</a> </p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wocanimei007/article/details/77510836">&#x53C2;&#x8003;&#x94FE;&#x63A5;2</a></p>
+<h4 id="&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"><a href="#&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;" class="headerlink" title="&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"></a>&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;</h4><ol>
+<li>&#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x6E90;&#x4EE3;&#x7801;&#xFF1A;</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;opencv2/imgproc/imgproc.hpp&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;opencv2/highgui/highgui.hpp&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">Vec3b <span class="title">RandomColor</span><span class="params">(<span class="keyword">int</span> value)</span></span>;  <span class="comment">//&#x751F;&#x6210;&#x968F;&#x673A;&#x989C;&#x8272;&#x51FD;&#x6570;</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">	String  filename;</span><br><span class="line">	filename =  <span class="string">&quot;baboon.jpg&quot;</span>;</span><br><span class="line">	Mat image = imread(filename);    <span class="comment">//&#x8F7D;&#x5165;RGB&#x5F69;&#x8272;&#x56FE;&#x50CF;</span></span><br><span class="line">	imshow(<span class="string">&quot;Source Image&quot;</span>, image);</span><br><span class="line">	<span class="comment">//&#x7070;&#x5EA6;&#x5316;&#xFF0C;&#x6EE4;&#x6CE2;&#xFF0C;Canny&#x8FB9;&#x7F18;&#x68C0;&#x6D4B;</span></span><br><span class="line">	Mat imageGray;</span><br><span class="line">	cvtColor(image, imageGray, CV_RGB2GRAY);<span class="comment">//&#x7070;&#x5EA6;&#x8F6C;&#x6362;</span></span><br><span class="line">	GaussianBlur(imageGray, imageGray, Size(<span class="number">5</span>, <span class="number">5</span>), <span class="number">2</span>);   <span class="comment">//&#x9AD8;&#x65AF;&#x6EE4;&#x6CE2;</span></span><br><span class="line">	imshow(<span class="string">&quot;Gray Image&quot;</span>, imageGray);</span><br><span class="line">	Canny(imageGray, imageGray, <span class="number">80</span>, <span class="number">150</span>);</span><br><span class="line">	imshow(<span class="string">&quot;Canny Image&quot;</span>, imageGray);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x67E5;&#x627E;&#x8F6E;&#x5ED3;</span></span><br><span class="line">	<span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;Point&gt;&gt; contours;</span><br><span class="line">	<span class="built_in">vector</span>&lt;Vec4i&gt; hierarchy;</span><br><span class="line">	findContours(imageGray, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point();</span><br><span class="line">	Mat imageContours = Mat::zeros(image.size(), CV_8UC1);  <span class="comment">//&#x8F6E;&#x5ED3;	</span></span><br><span class="line">	Mat marks(image.size(), CV_32S);   <span class="comment">//Opencv&#x5206;&#x6C34;&#x5CAD;&#x7B2C;&#x4E8C;&#x4E2A;&#x77E9;&#x9635;&#x53C2;&#x6570;</span></span><br><span class="line">	marks = Scalar::all(<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> compCount = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (; index &gt;= <span class="number">0</span>; index = hierarchy[index][<span class="number">0</span>], compCount++)</span><br><span class="line">	{</span><br><span class="line">		<span class="comment">//&#x5BF9;marks&#x8FDB;&#x884C;&#x6807;&#x8BB0;&#xFF0C;&#x5BF9;&#x4E0D;&#x540C;&#x533A;&#x57DF;&#x7684;&#x8F6E;&#x5ED3;&#x8FDB;&#x884C;&#x7F16;&#x53F7;&#xFF0C;&#x76F8;&#x5F53;&#x4E8E;&#x8BBE;&#x7F6E;&#x6CE8;&#x6C34;&#x70B9;&#xFF0C;&#x6709;&#x591A;&#x5C11;&#x8F6E;&#x5ED3;&#xFF0C;&#x5C31;&#x6709;&#x591A;&#x5C11;&#x6CE8;&#x6C34;&#x70B9;</span></span><br><span class="line">		drawContours(marks, contours, index, Scalar::all(compCount + <span class="number">1</span>), <span class="number">1</span>, <span class="number">8</span>, hierarchy);</span><br><span class="line">		drawContours(imageContours, contours, index, Scalar(<span class="number">255</span>), <span class="number">1</span>, <span class="number">8</span>, hierarchy);</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">//&#x6211;&#x4EEC;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x4F20;&#x5165;&#x7684;&#x77E9;&#x9635;marks&#x91CC;&#x662F;&#x4EC0;&#x4E48;&#x4E1C;&#x897F;</span></span><br><span class="line">	Mat marksShows;</span><br><span class="line">	convertScaleAbs(marks, marksShows);</span><br><span class="line">	imshow(<span class="string">&quot;marksShow&quot;</span>, marksShows);</span><br><span class="line">	imshow(<span class="string">&quot;&#x8F6E;&#x5ED3;&quot;</span>, imageContours);</span><br><span class="line">	watershed(image, marks);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x6211;&#x4EEC;&#x518D;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5206;&#x6C34;&#x5CAD;&#x7B97;&#x6CD5;&#x4E4B;&#x540E;&#x7684;&#x77E9;&#x9635;marks&#x91CC;&#x662F;&#x4EC0;&#x4E48;&#x4E1C;&#x897F;</span></span><br><span class="line">	Mat afterWatershed;</span><br><span class="line">	convertScaleAbs(marks, afterWatershed);</span><br><span class="line">	imshow(<span class="string">&quot;After Watershed&quot;</span>, afterWatershed);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x5BF9;&#x6BCF;&#x4E00;&#x4E2A;&#x533A;&#x57DF;&#x8FDB;&#x884C;&#x989C;&#x8272;&#x586B;&#x5145;</span></span><br><span class="line">	Mat PerspectiveImage = Mat::zeros(image.size(), CV_8UC3);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; marks.rows; i++)</span><br><span class="line">	{</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; marks.cols; j++)</span><br><span class="line">		{</span><br><span class="line">			<span class="keyword">int</span> index = marks.at&lt;<span class="keyword">int</span>&gt;(i, j);</span><br><span class="line">			<span class="keyword">if</span> (marks.at&lt;<span class="keyword">int</span>&gt;(i, j) == <span class="number">-1</span>)</span><br><span class="line">			{</span><br><span class="line">				PerspectiveImage.at&lt;Vec3b&gt;(i, j) = Vec3b(<span class="number">255</span>, <span class="number">255</span>, <span class="number">255</span>);</span><br><span class="line">			}</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			{</span><br><span class="line">				PerspectiveImage.at&lt;Vec3b&gt;(i, j) = RandomColor(index);</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line">	imshow(<span class="string">&quot;After ColorFill&quot;</span>, PerspectiveImage);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x5206;&#x5272;&#x5E76;&#x586B;&#x5145;&#x989C;&#x8272;&#x7684;&#x7ED3;&#x679C;&#x8DDF;&#x539F;&#x59CB;&#x56FE;&#x50CF;&#x878D;&#x5408;</span></span><br><span class="line">	Mat wshed;</span><br><span class="line">	addWeighted(image, <span class="number">0.4</span>, PerspectiveImage, <span class="number">0.6</span>, <span class="number">0</span>, wshed);</span><br><span class="line">	imshow(<span class="string">&quot;AddWeighted Image&quot;</span>, wshed);</span><br><span class="line">	waitKey();</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line">Vec3b RandomColor(<span class="keyword">int</span> value) <span class="comment">/*&lt; span style = &quot;line-height: 20.8px; font-family: sans-serif;&quot; &gt;//&#x751F;&#x6210;&#x968F;&#x673A;&#x989C;&#x8272;&#x51FD;&#x6570;&lt;/span&gt;*/</span></span><br><span class="line">{</span><br><span class="line">	value = value % <span class="number">255</span>;  <span class="comment">//&#x751F;&#x6210;0~255&#x7684;&#x968F;&#x673A;&#x6570;</span></span><br><span class="line">	RNG rng;</span><br><span class="line">	<span class="keyword">int</span> aa = rng.uniform(<span class="number">0</span>, value);</span><br><span class="line">	<span class="keyword">int</span> bb = rng.uniform(<span class="number">0</span>, value);</span><br><span class="line">	<span class="keyword">int</span> cc = rng.uniform(<span class="number">0</span>, value);</span><br><span class="line">	<span class="keyword">return</span> Vec3b(aa, bb, cc);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>mean shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;opencv2/highgui/highgui.hpp&quot;</span>  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;opencv2/core/core.hpp&quot;</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;opencv2/imgproc/imgproc.hpp&quot;</span>  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">	Mat img = imread(<span class="string">&quot;C:/Users/&#x674E;&#x5929;&#x4F9D;/Desktop/&#x5206;&#x5272;2/baboon.jpg&quot;</span>); <span class="comment">//&#x8BFB;&#x5165;&#x56FE;&#x50CF;&#xFF0C;RGB&#x4E09;&#x901A;&#x9053;    </span></span><br><span class="line">	imshow(<span class="string">&quot;&#x539F;&#x56FE;&#x50CF;&quot;</span>, img);</span><br><span class="line">	Mat res;                    <span class="comment">//&#x5206;&#x5272;&#x540E;&#x56FE;&#x50CF;  </span></span><br><span class="line">	<span class="keyword">int</span> spatialRad = <span class="number">50</span>;        <span class="comment">//&#x7A7A;&#x95F4;&#x7A97;&#x53E3;&#x5927;&#x5C0F;  </span></span><br><span class="line">	<span class="keyword">int</span> colorRad = <span class="number">50</span>;          <span class="comment">//&#x8272;&#x5F69;&#x7A97;&#x53E3;&#x5927;&#x5C0F;  </span></span><br><span class="line">	<span class="keyword">int</span> maxPyrLevel = <span class="number">2</span>;        <span class="comment">//&#x91D1;&#x5B57;&#x5854;&#x5C42;&#x6570;  </span></span><br><span class="line">	pyrMeanShiftFiltering(img, res, spatialRad, colorRad, maxPyrLevel); <span class="comment">//&#x8272;&#x5F69;&#x805A;&#x7C7B;&#x5E73;&#x6ED1;&#x6EE4;&#x6CE2;  </span></span><br><span class="line">	imshow(<span class="string">&quot;res&quot;</span>, res);</span><br><span class="line">	RNG rng = theRNG();</span><br><span class="line">	<span class="function">Mat <span class="title">mask</span><span class="params">(res.rows + <span class="number">2</span>, res.cols + <span class="number">2</span>, CV_8UC1, Scalar::all(<span class="number">0</span>))</span></span>;  <span class="comment">//&#x63A9;&#x6A21;  </span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> y = <span class="number">0</span>; y &lt; res.rows; y++)</span><br><span class="line">	{</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> x = <span class="number">0</span>; x &lt; res.cols; x++)</span><br><span class="line">		{</span><br><span class="line">			<span class="keyword">if</span> (mask.at&lt;uchar&gt;(y + <span class="number">1</span>, x + <span class="number">1</span>) == <span class="number">0</span>)  <span class="comment">//&#x975E;0&#x5904;&#x5373;&#x4E3A;1&#xFF0C;&#x8868;&#x793A;&#x5DF2;&#x7ECF;&#x7ECF;&#x8FC7;&#x586B;&#x5145;&#xFF0C;&#x4E0D;&#x518D;&#x5904;&#x7406;  </span></span><br><span class="line">			{</span><br><span class="line">				<span class="function">Scalar <span class="title">newVal</span><span class="params">(rng(<span class="number">256</span>), rng(<span class="number">256</span>), rng(<span class="number">256</span>))</span></span>;</span><br><span class="line">				floodFill(res, mask, Point(x, y), newVal, <span class="number">0</span>, Scalar::all(<span class="number">5</span>), Scalar::all(<span class="number">5</span>)); <span class="comment">//&#x6267;&#x884C;&#x6F2B;&#x6C34;&#x586B;&#x5145;  </span></span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line">	imshow(<span class="string">&quot;meanShift&#x56FE;&#x50CF;&#x5206;&#x5272;&quot;</span>, res);</span><br><span class="line">	waitKey();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7531;&#x4E8E;NCUTS&#x548C;GRAPHCUTS&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x8F83;&#x4E3A;&#x590D;&#x6742;&#xFF0C;&#x5B9E;&#x9A8C;&#x5F00;&#x6E90;&#x4EE3;&#x7801;&#x53EF;&#x89C1;&#x5B9E;&#x9A8C;&#x539F;&#x7406;&#x4E2D;&#x7684;&#x53C2;&#x8003;&#x94FE;&#x63A5;&#x3002;</p>
+<h4 id="&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"><a href="#&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;" class="headerlink" title="&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"></a>&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;</h4><h5 id="1-baboon"><a href="#1-baboon" class="headerlink" title="1. baboon"></a>1. baboon</h5><p>&#x5206;&#x6C34;&#x5CAD;&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-baboon.PNG" alt="water-baboon" style="zoom:50%;">
+
+<p>meanshift&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-bamboon.PNG" alt="meanshift-bamboon" style="zoom: 50%;">
+
+<p>NCUTS&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts-baboon.PNG" alt="ncuts-baboon" style="zoom:50%;">
+
+<p>Graphcuts&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-baboon.png" alt="gc-baboon" style="zoom: 67%;">
+
+<h5 id="2-lena"><a href="#2-lena" class="headerlink" title="2. lena"></a>2. lena</h5><p>&#x5206;&#x6C34;&#x5CAD;&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-lena.PNG" alt="water-lena" style="zoom:50%;">
+
+<p>meanshift&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-leNA.PNG" alt="meanshift-leNA" style="zoom:50%;">
+
+<p>NCUTS&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts -lena.PNG" alt="ncuts -lena" style="zoom:50%;">
+
+<p>Graph-cut&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-lena.png" alt="gc-lena" style="zoom:67%;">
+
+<h5 id="3-luffy"><a href="#3-luffy" class="headerlink" title="3.luffy"></a>3.luffy</h5><p>&#x5206;&#x6C34;&#x5CAD;&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/water-luffy.PNG" alt="water-luffy" style="zoom:50%;">
+
+<p>meanshift&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/meanshift-luffy.PNG" alt="meanshift-luffy" style="zoom:50%;">
+
+<p>NCUTS&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/ncuts -luffy.PNG" alt="ncuts -luffy" style="zoom:50%;">
+
+<p>Graph-cut&#xFF1A;</p>
+<img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/gc-luffy.png" alt="gc-luffy" style="zoom:67%;">
+
+<h4 id="&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"><a href="#&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;" class="headerlink" title="&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"></a>&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;</h4><p>&#x901A;&#x8FC7;&#x6BD4;&#x8F83;&#x5404;&#x4E2A;&#x7B97;&#x6CD5;&#x7684;&#x7ED3;&#x679C;&#x56FE;&#x53EF;&#x77E5;&#xFF1A;</p>
+<ol>
+<li>&#x5206;&#x6C34;&#x5CAD;&#x7B97;&#x6CD5;&#x5BF9;&#x8FB9;&#x7F18;&#x6BD4;&#x8F83;&#x654F;&#x611F;&#xFF0C;&#x6700;&#x7EC8;&#x5206;&#x5272;&#x51FA;&#x6765;&#x7684;&#x533A;&#x57DF;&#x4F1A;&#x5F88;&#x591A;&#x3002;</li>
+<li>meanshift&#x7B97;&#x6CD5;&#x7531;&#x4E8E;&#x5BF9;&#x56FE;&#x50CF;&#x5E73;&#x6ED1;&#x5316;&#xFF0C;&#x5BFC;&#x81F4;&#x6EE1;&#x6C34;&#x5904;&#x7406;&#x540E;&#x7684;&#x5206;&#x5272;&#x533A;&#x57DF;&#x8F83;&#x5C11;&#xFF0C;&#x751A;&#x81F3;&#x53EF;&#x80FD;&#x4E27;&#x5931;&#x67D0;&#x4E9B;&#x7279;&#x5F81;&#x3002;</li>
+<li>Ncuts&#x5B8C;&#x5168;&#x5C06;&#x56FE;&#x50CF;&#x5206;&#x5272;&#x6210;&#x4E86;&#x51E0;&#x4E2A;&#x533A;&#x57DF;&#xFF0C;&#x6839;&#x636E;&#x56FE;&#x50CF;&#x5F88;&#x96BE;&#x731C;&#x51FA;&#x539F;&#x56FE;&#x3002;</li>
+<li>Graphcuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x9700;&#x8981;&#x81EA;&#x5DF1;&#x89C4;&#x5B9A;&#x524D;&#x666F;&#x548C;&#x80CC;&#x666F;&#xFF0C;&#x7531;&#x4E8E;baboon&#x56FE;&#x6CA1;&#x6709;&#x80CC;&#x666F;&#xFF0C;&#x6240;&#x4EE5;&#x5206;&#x5272;&#x6548;&#x679C;&#x8F83;&#x5DEE;&#xFF0C;&#x800C;&#x540E;&#x4E24;&#x4E2A;&#x56FE;&#x5728;&#x4EBA;&#x4E3A;&#x9009;&#x62E9;&#x524D;&#x666F;&#x548C;&#x80CC;&#x666F;&#x540E;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#x7B97;&#x6CD5;&#x6548;&#x679C;&#x8F83;&#x597D;&#xFF0C;&#x80FD;&#x591F;&#x51C6;&#x786E;&#x5C06;&#x524D;&#x666F;&#x4E0E;&#x80CC;&#x666F;&#x5206;&#x79BB;&#x5F00;&#x3002;</li>
+</ol>
+<h4 id="&#x4E03;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"><a href="#&#x4E03;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;" class="headerlink" title="&#x4E03;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"></a>&#x4E03;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;</h4><p><img src="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/%E7%94%B5%E5%AD%90%E7%AD%BE%E5%90%8D.png" alt="&#x7535;&#x5B50;&#x7B7E;&#x540D;"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>I'm hungry,thanks for helping this kid.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.jpg" alt="Davinccci 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="Davinccci 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" rel="tag"># 图像处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/18/OTSU%E7%AE%97%E6%B3%95%E4%BB%A5%E5%8F%8A%E7%86%B5%E9%98%88%E5%80%BC%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E7%9A%84C%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0/" rel="prev" title="OTSU算法以及熵阈值分割算法的C语言实现(基于opencv)">
+      <i class="fa fa-chevron-left"></i> OTSU算法以及熵阈值分割算法的C语言实现(基于opencv)
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;&#x5BF9;&#x6BD4;"><span class="nav-number">1.</span> <span class="nav-text">&amp;#x56FE;&amp;#x50CF;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;&amp;#x5BF9;&amp;#x6BD4;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E00;&#x3001;&#x5B9E;&#x9A8C;&#x76EE;&#x7684;"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">&amp;#x4E00;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x76EE;&amp;#x7684;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E8C;&#x3001;&#x5B9E;&#x9A8C;&#x4EEA;&#x5668;"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">&amp;#x4E8C;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x4EEA;&amp;#x5668;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E09;&#x3001;&#x5B9E;&#x9A8C;&#x539F;&#x7406;"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">&amp;#x4E09;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x539F;&amp;#x7406;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-&#x5206;&#x6C34;&#x5CAD;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><span class="nav-number">1.0.0.3.1.</span> <span class="nav-text">1. &amp;#x5206;&amp;#x6C34;&amp;#x5CAD;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-mean-shift&#x56FE;&#x50CF;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><span class="nav-number">1.0.0.3.2.</span> <span class="nav-text">2.mean shift&amp;#x56FE;&amp;#x50CF;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-Ncuts&#x5206;&#x5272;&#x7B97;&#x6CD5;"><span class="nav-number">1.0.0.3.3.</span> <span class="nav-text">3.Ncuts&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-Graph-cuts&#x4EA4;&#x4E92;&#x5F0F;&#x5206;&#x5272;&#x7B97;&#x6CD5;"><span class="nav-number">1.0.0.3.4.</span> <span class="nav-text">4.Graph cuts&amp;#x4EA4;&amp;#x4E92;&amp;#x5F0F;&amp;#x5206;&amp;#x5272;&amp;#x7B97;&amp;#x6CD5;</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x56DB;&#x3001;&#x5B9E;&#x9A8C;&#x5185;&#x5BB9;"><span class="nav-number">1.0.0.4.</span> <span class="nav-text">&amp;#x56DB;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x5185;&amp;#x5BB9;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E94;&#x3001;&#x5B9E;&#x9A8C;&#x7ED3;&#x679C;"><span class="nav-number">1.0.0.5.</span> <span class="nav-text">&amp;#x4E94;&amp;#x3001;&amp;#x5B9E;&amp;#x9A8C;&amp;#x7ED3;&amp;#x679C;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-baboon"><span class="nav-number">1.0.0.5.1.</span> <span class="nav-text">1. baboon</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-lena"><span class="nav-number">1.0.0.5.2.</span> <span class="nav-text">2. lena</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-luffy"><span class="nav-number">1.0.0.5.3.</span> <span class="nav-text">3.luffy</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x516D;&#x3001;&#x7ED3;&#x679C;&#x5206;&#x6790;"><span class="nav-number">1.0.0.6.</span> <span class="nav-text">&amp;#x516D;&amp;#x3001;&amp;#x7ED3;&amp;#x679C;&amp;#x5206;&amp;#x6790;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4E03;&#x3001;&#x7535;&#x5B50;&#x7B7E;&#x540D;"><span class="nav-number">1.0.0.7.</span> <span class="nav-text">&amp;#x4E03;&amp;#x3001;&amp;#x7535;&amp;#x5B50;&amp;#x7B7E;&amp;#x540D;</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Davinccci"
+      src="/images/luffy.jpg">
+  <p class="site-author-name" itemprop="name">Davinccci</p>
+  <div class="site-description" itemprop="description">人生碌碌，竞短论长，却不道得失有数，荣枯难量。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Davinccci</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
