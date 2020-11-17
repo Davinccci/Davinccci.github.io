@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"davinccci.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="&amp;#x57FA;&amp;#x4E8E;python+openCV&amp;#x7684;  &amp;#x89C6;&amp;#x9891;&amp;#x2014;&amp;#x2014;&amp;#x56FE;&amp;#x50CF;&amp;#x62FC;&amp;#x63A5; &amp;#x91C7;&amp;#x7528;&amp;#x65E0;&amp;#x4EBA;&amp;#x673A;&amp;#x62CD;&amp;#x6444;&amp;#x5230;&amp;#x89C6;&amp;#x9891;&amp;#x540E;&amp;#xFF0C;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图像分割算法对比">
+<meta property="og:url" content="http://davinccci.github.io/2020/11/01/%E5%9F%BA%E4%BA%8Epython+openCV%E7%9A%84%E8%A7%86%E9%A2%91%E2%80%94%E2%80%94%E5%9B%BE%E5%83%8F%E6%8B%BC%E6%8E%A5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="&amp;#x57FA;&amp;#x4E8E;python+openCV&amp;#x7684;  &amp;#x89C6;&amp;#x9891;&amp;#x2014;&amp;#x2014;&amp;#x56FE;&amp;#x50CF;&amp;#x62FC;&amp;#x63A5; &amp;#x91C7;&amp;#x7528;&amp;#x65E0;&amp;#x4EBA;&amp;#x673A;&amp;#x62CD;&amp;#x6444;&amp;#x5230;&amp;#x89C6;&amp;#x9891;&amp;#x540E;&amp;#xFF0C;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-11-17T10:58:10.058Z">
+<meta property="article:author" content="Davinccci">
+<meta property="article:tag" content="图像处理 python opencv">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://davinccci.github.io/2020/11/01/%E5%9F%BA%E4%BA%8Epython+openCV%E7%9A%84%E8%A7%86%E9%A2%91%E2%80%94%E2%80%94%E5%9B%BE%E5%83%8F%E6%8B%BC%E6%8E%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图像分割算法对比 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://davinccci.github.io/2020/11/01/%E5%9F%BA%E4%BA%8Epython+openCV%E7%9A%84%E8%A7%86%E9%A2%91%E2%80%94%E2%80%94%E5%9B%BE%E5%83%8F%E6%8B%BC%E6%8E%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/luffy.jpg">
+      <meta itemprop="name" content="Davinccci">
+      <meta itemprop="description" content="人生碌碌，竞短论长，却不道得失有数，荣枯难量。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图像分割算法对比
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-01 00:00:00" itemprop="dateCreated datePublished" datetime="2020-11-01T00:00:00+08:00">2020-11-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-17 18:58:10" itemprop="dateModified" datetime="2020-11-17T18:58:10+08:00">2020-11-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/opencv/" itemprop="url" rel="index"><span itemprop="name">opencv</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="&#x57FA;&#x4E8E;python-openCV&#x7684;-&#x89C6;&#x9891;&#x2014;&#x2014;&#x56FE;&#x50CF;&#x62FC;&#x63A5;"><a href="#&#x57FA;&#x4E8E;python-openCV&#x7684;-&#x89C6;&#x9891;&#x2014;&#x2014;&#x56FE;&#x50CF;&#x62FC;&#x63A5;" class="headerlink" title="&#x57FA;&#x4E8E;python+openCV&#x7684;  &#x89C6;&#x9891;&#x2014;&#x2014;&#x56FE;&#x50CF;&#x62FC;&#x63A5;"></a>&#x57FA;&#x4E8E;<code>python+openCV</code>&#x7684;  &#x89C6;&#x9891;&#x2014;&#x2014;&#x56FE;&#x50CF;&#x62FC;&#x63A5;</h1><blockquote>
+<p>&#x91C7;&#x7528;&#x65E0;&#x4EBA;&#x673A;&#x62CD;&#x6444;&#x5230;&#x89C6;&#x9891;&#x540E;&#xFF0C;&#x5E0C;&#x671B;&#x901A;&#x8FC7;&#x56FE;&#x50CF;&#x62FC;&#x63A5;&#x7B97;&#x6CD5;&#x5C06;&#x8BE5;&#x89C6;&#x9891;&#x8F6C;&#x6362;&#x4E3A;&#x4E00;&#x5F20;&#x5927;&#x56FE;&#x3002;</p>
+</blockquote>
+<h3 id="&#x4E00;&#x3001;&#x4ECE;&#x89C6;&#x9891;&#x4E2D;&#x62BD;&#x53D6;&#x56FE;&#x7247;"><a href="#&#x4E00;&#x3001;&#x4ECE;&#x89C6;&#x9891;&#x4E2D;&#x62BD;&#x53D6;&#x56FE;&#x7247;" class="headerlink" title="&#x4E00;&#x3001;&#x4ECE;&#x89C6;&#x9891;&#x4E2D;&#x62BD;&#x53D6;&#x56FE;&#x7247;"></a>&#x4E00;&#x3001;&#x4ECE;&#x89C6;&#x9891;&#x4E2D;&#x62BD;&#x53D6;&#x56FE;&#x7247;</h3><h4 id="1-&#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF08;VideoCapture&#xFF09;"><a href="#1-&#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF08;VideoCapture&#xFF09;" class="headerlink" title="1. &#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF08;VideoCapture&#xFF09;"></a>1. &#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF08;VideoCapture&#xFF09;</h4><ul>
+<li>&#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF0C;&#x4E3B;&#x8981;&#x5229;&#x7528;<code>VideoCapture</code>&#x7C7B;&#x4E0B;&#x7684;&#x65B9;&#x6CD5;&#x6253;&#x5F00;&#x89C6;&#x9891;&#x5E76;&#x83B7;&#x53D6;&#x89C6;&#x9891;&#x7684;&#x5E27;&#x3002;</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cap  =  cv2.VideoCapture(filename)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>&#x9A8C;&#x8BC1;&#x89C6;&#x9891;&#x662F;&#x5426;&#x8BFB;&#x5165;</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cap.isOpened()</span><br><span class="line"><span class="comment">#&#x8FD4;&#x56DE;True&#x6216;False</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>&#x83B7;&#x53D6;&#x89C6;&#x9891;&#x5E27;</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">frame = cap.read()</span><br><span class="line"><span class="comment"># frame&#x662F;&#x4E00;&#x4E2A;&#x5143;&#x7EC4;&#xFF0C;&#x5305;&#x542B;&#x4E00;&#x4E2A;bool&#x503C;&#x548C;&#x4E00;&#x4E2A;array</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>&#x83B7;&#x53D6;&#x89C6;&#x9891;&#x7684;&#x53C2;&#x6570;</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cap.get()</span><br><span class="line"><span class="comment">#&#x62EC;&#x53F7;&#x91CC;&#x53EF;&#x586B;&#x5165;0&#xFF5E;18&#xFF0C;&#x53EF;&#x8FD4;&#x56DE;&#x4E0D;&#x540C;&#x7684;&#x53C2;&#x6570;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>&#x89C6;&#x9891;&#x7A7A;&#x95F4;&#x91CA;&#x653E;</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cap.release()</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-&#x56FE;&#x7247;&#x7684;&#x663E;&#x793A;"><a href="#2-&#x56FE;&#x7247;&#x7684;&#x663E;&#x793A;" class="headerlink" title="2. &#x56FE;&#x7247;&#x7684;&#x663E;&#x793A;"></a>2. &#x56FE;&#x7247;&#x7684;&#x663E;&#x793A;</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cv2.imshow(<span class="string">&apos;fram&apos;</span>,fram)</span><br><span class="line">cv2.waitKey()<span class="comment">#&#x5426;&#x5219;&#x4F1A;&#x81EA;&#x52A8;&#x63A8;&#x51FA;</span></span><br><span class="line">cv2.destroyAllWindows()<span class="comment">#&#x5173;&#x95ED;&#x7A97;&#x53E3;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-&#x56FE;&#x7247;&#x7684;&#x4FDD;&#x5B58;"><a href="#3-&#x56FE;&#x7247;&#x7684;&#x4FDD;&#x5B58;" class="headerlink" title="3.&#x56FE;&#x7247;&#x7684;&#x4FDD;&#x5B58;"></a>3.&#x56FE;&#x7247;&#x7684;&#x4FDD;&#x5B58;</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cv2.imwrite(image_path,image)</span><br></pre></td></tr></table></figure>
+
+<h4 id="&#x4EE3;&#x7801;&#xFF1A;"><a href="#&#x4EE3;&#x7801;&#xFF1A;" class="headerlink" title="&#x4EE3;&#x7801;&#xFF1A;"></a>&#x4EE3;&#x7801;&#xFF1A;</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">save_image</span>(<span class="params">num,image</span>):</span></span><br><span class="line">    image_path = <span class="string">&apos;imgs/{}.jpg&apos;</span>.format(str(num))</span><br><span class="line">    cv2.imwrite(image_path,image)</span><br><span class="line">    </span><br><span class="line">video_name = <span class="string">&apos;1.MP4&apos;</span></span><br><span class="line">cap = cv2.VideoCapture(video_name) <span class="comment">#&#x6253;&#x5F00;&#x89C6;&#x9891;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> cap.isOpened():</span><br><span class="line">    ret,frame = cap.read()</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    ret = <span class="literal">False</span></span><br><span class="line">    </span><br><span class="line">count = <span class="number">0</span>  <span class="comment">#count the numbers of pictures</span></span><br><span class="line">frame_num= <span class="number">100</span> <span class="comment">#&#x95F4;&#x9694;&#x5E27;&#x6570;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> ret:</span><br><span class="line">    ret,frame = cap.read()</span><br><span class="line">    <span class="keyword">if</span> count%frame_num == <span class="number">0</span>:</span><br><span class="line">        save_image(count,frame)</span><br><span class="line">        print(count)</span><br><span class="line">    count = count+<span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#print(ret)</span></span><br><span class="line">cap.release()</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>I'm hungry,thanks for helping this kid.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.jpg" alt="Davinccci 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="Davinccci 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86-python-opencv/" rel="tag"># 图像处理 python opencv</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/29/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94/" rel="prev" title="图像分割算法对比">
+      <i class="fa fa-chevron-left"></i> 图像分割算法对比
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#&#x57FA;&#x4E8E;python-openCV&#x7684;-&#x89C6;&#x9891;&#x2014;&#x2014;&#x56FE;&#x50CF;&#x62FC;&#x63A5;"><span class="nav-number">1.</span> <span class="nav-text">&amp;#x57FA;&amp;#x4E8E;python+openCV&amp;#x7684;  &amp;#x89C6;&amp;#x9891;&amp;#x2014;&amp;#x2014;&amp;#x56FE;&amp;#x50CF;&amp;#x62FC;&amp;#x63A5;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#&#x4E00;&#x3001;&#x4ECE;&#x89C6;&#x9891;&#x4E2D;&#x62BD;&#x53D6;&#x56FE;&#x7247;"><span class="nav-number">1.0.1.</span> <span class="nav-text">&amp;#x4E00;&amp;#x3001;&amp;#x4ECE;&amp;#x89C6;&amp;#x9891;&amp;#x4E2D;&amp;#x62BD;&amp;#x53D6;&amp;#x56FE;&amp;#x7247;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-&#x89C6;&#x9891;&#x7684;&#x8BFB;&#x53D6;&#xFF08;VideoCapture&#xFF09;"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">1. &amp;#x89C6;&amp;#x9891;&amp;#x7684;&amp;#x8BFB;&amp;#x53D6;&amp;#xFF08;VideoCapture&amp;#xFF09;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-&#x56FE;&#x7247;&#x7684;&#x663E;&#x793A;"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">2. &amp;#x56FE;&amp;#x7247;&amp;#x7684;&amp;#x663E;&amp;#x793A;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-&#x56FE;&#x7247;&#x7684;&#x4FDD;&#x5B58;"><span class="nav-number">1.0.1.3.</span> <span class="nav-text">3.&amp;#x56FE;&amp;#x7247;&amp;#x7684;&amp;#x4FDD;&amp;#x5B58;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#&#x4EE3;&#x7801;&#xFF1A;"><span class="nav-number">1.0.1.4.</span> <span class="nav-text">&amp;#x4EE3;&amp;#x7801;&amp;#xFF1A;</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Davinccci"
+      src="/images/luffy.jpg">
+  <p class="site-author-name" itemprop="name">Davinccci</p>
+  <div class="site-description" itemprop="description">人生碌碌，竞短论长，却不道得失有数，荣枯难量。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Davinccci</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
